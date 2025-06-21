@@ -249,33 +249,79 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
               </div>
             </motion.div>
 
-         <form
+            <motion.form
   name="contact"
   method="POST"
   action="/.netlify/functions/send-email"
   className="space-y-6"
+  initial={{ x: 50, opacity: 0 }}
+  animate={inView4 ? { x: 0, opacity: 1 } : {}}
+  transition={{ duration: 0.8 }}
 >
+
+
   {/* Full Name */}
-  <input type="text" name="name" required />
+  <input
+    type="text"
+    name="name"
+    placeholder="FULL NAME"
+    required
+    className="w-full bg-transparent border-b-4 border-white p-4 placeholder-white text-white font-bold"
+  />
 
   {/* Email */}
-  <input type="email" name="email" required />
+  <input
+    type="email"
+    name="email"
+    placeholder="EMAIL"
+    required
+    className="w-full bg-transparent border-b-4 border-white p-4 placeholder-white text-white font-bold"
+  />
 
   {/* Project Type */}
-  <select name="project_type" required>
-    <option value="">PROJECT TYPE</option>
-    <option value="General Inquiry">General Inquiry</option>
-    <option value="Project Quote">Project Quote</option>
-    <option value="Collaboration">Collaboration</option>
-    <option value="Feedback">Feedback</option>
-  </select>
+ <select
+  name="project_type"
+  className="w-full bg-red-600 border-b-4 border-white p-4 text-white font-bold appearance-none"
+  defaultValue=""
+  required
+>
+  <option value="" disabled hidden className="bg-red-600 text-white">
+    PROJECT TYPE
+  </option>
+  <option value="General Inquiry" className="bg-red-600 text-white">
+    General Inquiry
+  </option>
+  <option value="Project Quote" className="bg-red-600 text-white">
+    Project Quote
+  </option>
+  <option value="Collaboration" className="bg-red-600 text-white">
+    Collaboration
+  </option>
+  <option value="Feedback" className="bg-red-600 text-white">
+    Feedback
+  </option>
+</select>
+
+
 
   {/* Message */}
-  <textarea name="message" rows={4} required />
+  <textarea
+    name="message"
+    placeholder="YOUR MESSAGE"
+    rows={4}
+    required
+    className="w-full bg-transparent border-b-4 border-white p-4 placeholder-white text-white font-bold"
+  />
 
-  <button type="submit">SEND MESSAGE</button>
-</form>
-
+  <motion.button
+    type="submit"
+    whileHover={{ scale: 1.05 }}
+    whileTap={{ scale: 0.95 }}
+    className="bg-black text-white px-8 py-4 font-black text-xl hover:bg-white hover:text-red-600 transition-colors"
+  >
+    SEND MESSAGE
+  </motion.button>
+</motion.form>
 
           </div>
         </div>
