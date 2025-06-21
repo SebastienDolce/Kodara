@@ -1,12 +1,17 @@
 // app/components/KodaraClient.tsx
 "use client";
 import { useRouter } from "next/navigation";
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { motion, useScroll, useTransform, AnimatePresence } from "framer-motion";
 import { useInView } from "react-intersection-observer";
 import Link from "next/link";
 import Image from "next/image";
 
+declare global {
+  interface Window {
+    grecaptcha: any;
+  }
+}
 
 interface PostMeta {
   slug: string;
@@ -31,6 +36,44 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
   const [ref2, inView2] = useInView({ threshold: 0.3, triggerOnce: true });
   const [ref3, inView3] = useInView({ threshold: 0.3, triggerOnce: true });
   const [ref4, inView4] = useInView({ threshold: 0.3, triggerOnce: true });
+
+const formRef = useRef<HTMLFormElement>(null);
+
+useEffect(() => {
+  const script = document.createElement('script');
+  script.src = 'https://www.google.com/recaptcha/api.js?render=6LfPImkrAAAAAKG2Ybsg0XNXFAn5YCr8URjuGJG5';
+  script.async = true;
+  document.body.appendChild(script);
+
+  const handleSubmit = async (e: Event) => {
+    e.preventDefault();
+
+    const form = formRef.current;
+    if (!form) return;
+const token = await window.grecaptcha.execute('6LfPImkrAAAAAKG2Ybsg0XNXFAn5YCr8URjuGJG5', { action: 'submit' });
+
+    //const token = await grecaptcha.execute('6LfPImkrAAAAAKG2Ybsg0XNXFAn5YCr8URjuGJG5', {
+    //  action: 'submit',
+  //  });
+
+    const input = form.querySelector<HTMLInputElement>('#g-recaptcha-response');
+    if (input) input.value = token;
+
+    form.submit();
+  };
+
+  const form = formRef.current;
+  if (form) {
+    form.addEventListener('submit', handleSubmit);
+  }
+
+  return () => {
+    if (form) {
+      form.removeEventListener('submit', handleSubmit);
+    }
+  };
+}, []);
+
 
   useEffect(() => {
     setTimeout(() => setLoading(false), 2000);
@@ -83,7 +126,9 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
 ];
 
 
+
   return (
+    <><script src="https://www.google.com/recaptcha/api.js?render=your_site_key"></script>
     <div className="bg-black text-white min-h-screen font-mono overflow-x-hidden">
       <AnimatePresence>
         {loading && (
@@ -95,13 +140,12 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
             <motion.div
               animate={{ rotate: 360 }}
               transition={{ duration: 1, repeat: Infinity, ease: "linear" }}
-              className="w-20 h-20 border-4 border-red-600 border-t-transparent"
-            />
+              className="w-20 h-20 border-4 border-red-600 border-t-transparent" />
           </motion.div>
         )}
       </AnimatePresence>
 
-      
+
 
       {/* Hero Section */}
       <section id="home" className="min-h-screen flex items-center justify-center relative">
@@ -143,15 +187,15 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
 
           <div className="grid md:grid-cols-2 gap-12">
             {services.map((service, index) => (
-  <motion.div
-    key={index}
-    onClick={() => router.push(`/services#${service.slug}`)}
-    className="cursor-pointer border-4 border-white p-8 hover:border-red-600 transition-colors"
-  >
-    <h3 className="text-4xl font-black mb-4">{service.title}</h3>
-    <p className="text-gray-400 leading-relaxed">{service.description}</p>
-  </motion.div>
-))}
+              <motion.div
+                key={index}
+                onClick={() => router.push(`/services#${service.slug}`)}
+                className="cursor-pointer border-4 border-white p-8 hover:border-red-600 transition-colors"
+              >
+                <h3 className="text-4xl font-black mb-4">{service.title}</h3>
+                <p className="text-gray-400 leading-relaxed">{service.description}</p>
+              </motion.div>
+            ))}
 
           </div>
         </div>
@@ -182,18 +226,17 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
                 className="relative"
               >
                 <div className="bg-black text-white p-8 h-full">
-  <div className="relative w-full h-48 mb-6">
-    <Image
-      src={member.image}
-      alt={member.name}
-      fill
-      className="object-cover rounded-lg"
-    />
-  </div>
-  <h3 className="text-3xl font-black mb-2">{member.name}</h3>
-  <p className="text-red-600 font-bold mb-4">{member.role}</p>
-  <p className="text-gray-400">{member.bio}</p>
-</div>
+                  <div className="relative w-full h-48 mb-6">
+                    <Image
+                      src={member.image}
+                      alt={member.name}
+                      fill
+                      className="object-cover rounded-lg" />
+                  </div>
+                  <h3 className="text-3xl font-black mb-2">{member.name}</h3>
+                  <p className="text-red-600 font-bold mb-4">{member.role}</p>
+                  <p className="text-gray-400">{member.bio}</p>
+                </div>
 
                 <motion.div className="absolute -bottom-2 -right-2 w-full h-full border-4 border-red-600 -z-10" whileHover={{ x: 2, y: 2 }} />
               </motion.div>
@@ -250,83 +293,83 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
             </motion.div>
 
             <motion.form
-  name="contact"
-  method="POST"
-  action="/.netlify/functions/send-email"
-  className="space-y-6"
-  initial={{ x: 50, opacity: 0 }}
-  animate={inView4 ? { x: 0, opacity: 1 } : {}}
-  transition={{ duration: 0.8 }}
->
+              name="contact"
+              ref={formRef}
+              method="POST"
+              action="/.netlify/functions/send-email"
+              className="space-y-6"
+              initial={{ x: 50, opacity: 0 }}
+              animate={inView4 ? { x: 0, opacity: 1 } : {}}
+              transition={{ duration: 0.8 }}
+            >
+  <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response" />
 
 
-  {/* Full Name */}
-  <input
-    type="text"
-    name="name"
-    placeholder="FULL NAME"
-    required
-    className="w-full bg-transparent border-b-4 border-white p-4 placeholder-white text-white font-bold"
-  />
+              {/* Full Name */}
+              <input
+                type="text"
+                name="name"
+                placeholder="FULL NAME"
+                required
+                className="w-full bg-transparent border-b-4 border-white p-4 placeholder-white text-white font-bold" />
 
-  {/* Email */}
-  <input
-    type="email"
-    name="email"
-    placeholder="EMAIL"
-    required
-    className="w-full bg-transparent border-b-4 border-white p-4 placeholder-white text-white font-bold"
-  />
+              {/* Email */}
+              <input
+                type="email"
+                name="email"
+                placeholder="EMAIL"
+                required
+                className="w-full bg-transparent border-b-4 border-white p-4 placeholder-white text-white font-bold" />
 
-  {/* Project Type */}
- <select
-  name="project_type"
-  className="w-full bg-red-600 border-b-4 border-white p-4 text-white font-bold appearance-none"
-  defaultValue=""
-  required
->
-  <option value="" disabled hidden className="bg-red-600 text-white">
-    PROJECT TYPE
-  </option>
-  <option value="General Inquiry" className="bg-red-600 text-white">
-    General Inquiry
-  </option>
-  <option value="Project Quote" className="bg-red-600 text-white">
-    Project Quote
-  </option>
-  <option value="Collaboration" className="bg-red-600 text-white">
-    Collaboration
-  </option>
-  <option value="Feedback" className="bg-red-600 text-white">
-    Feedback
-  </option>
-</select>
+              {/* Project Type */}
+              <select
+                name="project_type"
+                className="w-full bg-red-600 border-b-4 border-white p-4 text-white font-bold appearance-none"
+                defaultValue=""
+                required
+              >
+                <option value="" disabled hidden className="bg-red-600 text-white">
+                  PROJECT TYPE
+                </option>
+                <option value="General Inquiry" className="bg-red-600 text-white">
+                  General Inquiry
+                </option>
+                <option value="Project Quote" className="bg-red-600 text-white">
+                  Project Quote
+                </option>
+                <option value="Collaboration" className="bg-red-600 text-white">
+                  Collaboration
+                </option>
+                <option value="Feedback" className="bg-red-600 text-white">
+                  Feedback
+                </option>
+              </select>
 
 
 
-  {/* Message */}
-  <textarea
-    name="message"
-    placeholder="YOUR MESSAGE"
-    rows={4}
-    required
-    className="w-full bg-transparent border-b-4 border-white p-4 placeholder-white text-white font-bold"
-  />
+              {/* Message */}
+              <textarea
+                name="message"
+                placeholder="YOUR MESSAGE"
+                rows={4}
+                required
+                className="w-full bg-transparent border-b-4 border-white p-4 placeholder-white text-white font-bold" />
 
-  <motion.button
-    type="submit"
-    whileHover={{ scale: 1.05 }}
-    whileTap={{ scale: 0.95 }}
-    className="bg-black text-white px-8 py-4 font-black text-xl hover:bg-white hover:text-red-600 transition-colors"
-  >
-    SEND MESSAGE
-  </motion.button>
-</motion.form>
+              <motion.button
+                type="submit"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="bg-black text-white px-8 py-4 font-black text-xl hover:bg-white hover:text-red-600 transition-colors"
+              >
+                SEND MESSAGE
+              </motion.button>
+            </motion.form>
 
           </div>
         </div>
       </section>
-    </div>
+    </div></>
+    
   );
 };
 
