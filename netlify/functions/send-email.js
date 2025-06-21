@@ -1,9 +1,8 @@
-
 export async function handler(event) {
   if (event.httpMethod !== 'POST') {
     return {
       statusCode: 405,
-      body: JSON.stringify({ error: 'Method not allowed' }),
+      body: 'Method Not Allowed',
     };
   }
 
@@ -36,12 +35,20 @@ export async function handler(event) {
       }),
     });
 
-    const data = await res.json();
-
-    return {
-      statusCode: res.ok ? 200 : res.status,
-      body: JSON.stringify(data),
-    };
+    if (res.ok) {
+      return {
+        statusCode: 302,
+        headers: {
+          Location: '/success',
+        },
+      };
+    } else {
+      const data = await res.json();
+      return {
+        statusCode: res.status,
+        body: JSON.stringify({ error: 'Email failed', details: data }),
+      };
+    }
   } catch (error) {
     return {
       statusCode: 500,
