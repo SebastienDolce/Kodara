@@ -246,7 +246,7 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
             <motion.form
   name="contact"
   method="POST"
-  action="/success.html"
+  action="/success"
   data-netlify="true"
   netlify-honeypot="bot-field"
   className="space-y-6"
