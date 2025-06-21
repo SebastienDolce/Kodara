@@ -208,11 +208,11 @@ const token = await window.grecaptcha.execute('6LfPImkrAAAAAKG2Ybsg0XNXFAn5YCr8U
     </h2>
     <p className="text-lg md:text-xl font-medium leading-relaxed max-w-3xl mx-auto">
       Kodara exists to bridge the gap between <strong>visionary ideas</strong> and <strong>high-performance software</strong>.
-      We're here for startups and teams who want more than cookie-cutter code — who want thoughtful engineering,
+      We're here for startups and teams who want more than cookie-cutter code, who want thoughtful engineering,
       rapid iteration, and design that respects both form and function.
     </p>
     <p className="text-lg md:text-xl font-medium leading-relaxed max-w-3xl mx-auto">
-      In a world full of complexity, we make things work — beautifully, reliably, and fast.
+      In a world full of complexity, we make things work beautifully, reliably, and fast.
       From scalable web apps to bulletproof backends, we bring deep technical craft and
       startup-level urgency to everything we build.
     </p>
