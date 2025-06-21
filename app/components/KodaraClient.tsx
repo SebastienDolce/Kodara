@@ -201,6 +201,25 @@ const token = await window.grecaptcha.execute('6LfPImkrAAAAAKG2Ybsg0XNXFAn5YCr8U
         </div>
       </section>
 
+      <section id="why-we-exist" className="bg-white text-black px-6 py-20 border-y-4 border-black">
+  <div className="max-w-5xl mx-auto text-center space-y-8">
+    <h2 className="text-4xl md:text-5xl font-extrabold tracking-tight">
+      Why We Exist
+    </h2>
+    <p className="text-lg md:text-xl font-medium leading-relaxed max-w-3xl mx-auto">
+      Kodara exists to bridge the gap between <strong>visionary ideas</strong> and <strong>high-performance software</strong>.
+      We're here for startups and teams who want more than cookie-cutter code — who want thoughtful engineering,
+      rapid iteration, and design that respects both form and function.
+    </p>
+    <p className="text-lg md:text-xl font-medium leading-relaxed max-w-3xl mx-auto">
+      In a world full of complexity, we make things work — beautifully, reliably, and fast.
+      From scalable web apps to bulletproof backends, we bring deep technical craft and
+      startup-level urgency to everything we build.
+    </p>
+  </div>
+</section>
+
+
       {/* Team Section */}
       <section id="team" ref={ref2} className="min-h-screen py-20 bg-white text-black">
         <div className="max-w-7xl mx-auto px-4">
