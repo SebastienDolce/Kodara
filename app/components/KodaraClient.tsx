@@ -40,19 +40,19 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
   {
     name: "Sebastien",
     role: "CEO",
-    bio: "Visionary leader driving Kodara's strategic direction and growth.",
+    bio: "Sebastien guides Kodara’s direction with a focus on transparency and client success.",
     image: "/images/sebastien.png", // or use a remote URL
   },
   {
     name: "Rob",
     role: "CTO",
-    bio: "Technical mastermind architecting cutting-edge solutions.",
+    bio: "Rob turns bold ideas into high-performance software, every time.",
     image: "/images/rob.png",
   },
   {
     name: "Gabe",
     role: "CFO",
-    bio: "Financial strategist ensuring sustainable growth and profitability.",
+    bio: "Gabe keeps everything sustainable—so we can build smart, not just fast.",
     image: "/images/gabe.png",
   },
 ];
@@ -62,18 +62,24 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
   {
     title: "Custom Web & App Development",
     slug: "web-design",
-    description: "We write the code so you don’t have to pretend you understand it.",
+    description: "We handle the code, and make sure you understand the why behind it.",
   },
   {
     title: "Tech Strategy & Consulting",
     slug: "technical-consulting",
-    description: "We explain the tech stuff so clearly, your grandma could nod along.",
+    description: "We break down complex tech into clear, confident decisions.",
   },
   {
     title: "MVPs & Prototypes",
     slug: "software-engineering",
-    description: "Your million-dollar idea deserves more than a napkin sketch.",
+    description: "We help you move from rough idea to real, working product—fast.",
   },
+  {
+    title: "Data Pipelines & Integrations",
+    slug: "data-pipelines",
+    description: "We connect your tools, automate the boring stuff, and keep your data flowing exactly where it needs to go.",
+  },
+
 ];
 
 
@@ -111,11 +117,11 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
             transition={{ duration: 0.8, delay: 0.5 }}
             className="text-8xl md:text-9xl font-black tracking-tighter mb-4"
           >
-            BUILD
+            IDEAS
             <br />
-            BREAK
+            INTO
             <br />
-            <span className="text-red-600">BETTER</span>
+            <span className="text-red-600">REALITY</span>
           </motion.h2>
           <motion.p initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8, delay: 1 }} className="text-xl tracking-widest">
             SOFTWARE ENGINEERING REDEFINED
@@ -200,9 +206,9 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
       <section id="blog" className="min-h-screen py-20">
         <div className="max-w-7xl mx-auto px-4">
           <motion.h2 initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.8 }} className="text-7xl font-black mb-20 text-center">
-            METEORIC
+            IDEAS
             <br />
-            <span className="text-red-600">RISE</span>
+            <span className="text-red-600">IN ACTION</span>
           </motion.h2>
 
           <div className="space-y-12">
@@ -234,8 +240,8 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
 
           <div className="grid md:grid-cols-2 gap-12">
             <motion.div initial={{ x: -50, opacity: 0 }} animate={inView4 ? { x: 0, opacity: 1 } : {}} transition={{ duration: 0.8 }}>
-              <h3 className="text-4xl font-black mb-8">LET'S BUILD SOMETHING</h3>
-              <p className="text-xl mb-8">Ready to break conventions? We're here to help.</p>
+              <h3 className="text-4xl font-black mb-8">LET'S BUILD TOGETHER</h3>
+              <p className="text-xl mb-8">Ready to break conventions? We work with startups, enterprises, and bold individuals. Let’s bring your vision to life.</p>
               <div className="space-y-4">
                 <p className="text-xl font-bold">sdolce@kodara.dev</p>
                 <p className="text-xl font-bold">+1 (555) 123-4567</p>
@@ -243,87 +249,33 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
               </div>
             </motion.div>
 
-            <motion.form
+         <form
   name="contact"
   method="POST"
-  action="/success"
-  data-netlify="true"
-  netlify-honeypot="bot-field"
+  action="/.netlify/functions/send-email"
   className="space-y-6"
-  initial={{ x: 50, opacity: 0 }}
-  animate={inView4 ? { x: 0, opacity: 1 } : {}}
-  transition={{ duration: 0.8 }}
 >
-  {/* Netlify hidden fields */}
-  <input type="hidden" name="form-name" value="contact" />
-  <p className="hidden">
-    <label>
-      Don’t fill this out: <input name="bot-field" />
-    </label>
-  </p>
-
   {/* Full Name */}
-  <input
-    type="text"
-    name="name"
-    placeholder="FULL NAME"
-    required
-    className="w-full bg-transparent border-b-4 border-white p-4 placeholder-white text-white font-bold"
-  />
+  <input type="text" name="name" required />
 
   {/* Email */}
-  <input
-    type="email"
-    name="email"
-    placeholder="EMAIL"
-    required
-    className="w-full bg-transparent border-b-4 border-white p-4 placeholder-white text-white font-bold"
-  />
+  <input type="email" name="email" required />
 
   {/* Project Type */}
- <select
-  name="project_type"
-  className="w-full bg-red-600 border-b-4 border-white p-4 text-white font-bold appearance-none"
-  defaultValue=""
-  required
->
-  <option value="" disabled hidden className="bg-red-600 text-white">
-    PROJECT TYPE
-  </option>
-  <option value="General Inquiry" className="bg-red-600 text-white">
-    General Inquiry
-  </option>
-  <option value="Project Quote" className="bg-red-600 text-white">
-    Project Quote
-  </option>
-  <option value="Collaboration" className="bg-red-600 text-white">
-    Collaboration
-  </option>
-  <option value="Feedback" className="bg-red-600 text-white">
-    Feedback
-  </option>
-</select>
-
-
+  <select name="project_type" required>
+    <option value="">PROJECT TYPE</option>
+    <option value="General Inquiry">General Inquiry</option>
+    <option value="Project Quote">Project Quote</option>
+    <option value="Collaboration">Collaboration</option>
+    <option value="Feedback">Feedback</option>
+  </select>
 
   {/* Message */}
-  <textarea
-    name="message"
-    placeholder="YOUR MESSAGE"
-    rows={4}
-    required
-    className="w-full bg-transparent border-b-4 border-white p-4 placeholder-white text-white font-bold"
-  />
+  <textarea name="message" rows={4} required />
 
-  <motion.button
-    type="submit"
-    whileHover={{ scale: 1.05 }}
-    whileTap={{ scale: 0.95 }}
-    className="bg-black text-white px-8 py-4 font-black text-xl hover:bg-white hover:text-red-600 transition-colors"
-  >
-    SEND MESSAGE
-  </motion.button>
-</motion.form>
+  <button type="submit">SEND MESSAGE</button>
+</form>
+
 
           </div>
         </div>
