@@ -29,7 +29,7 @@ export async function handler(event) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        from: 'Your Name <sebastiendolce@gmail.com>',
+        from: 'Your Name <no-reply@contact.bitsimple.dev>',
         to: 'sdolce@bitsimple.dev',
         subject: `New ${projectType} from ${name}`,
         html,
