@@ -246,7 +246,7 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
             <motion.form
   name="contact"
   method="POST"
-  action=""
+  action="/success.html"
   data-netlify="true"
   netlify-honeypot="bot-field"
   className="space-y-6"
@@ -256,7 +256,11 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
 >
   {/* Netlify hidden fields */}
   <input type="hidden" name="form-name" value="contact" />
-
+  <p className="hidden">
+    <label>
+      Don’t fill this out: <input name="bot-field" />
+    </label>
+  </p>
 
   {/* Full Name */}
   <input
