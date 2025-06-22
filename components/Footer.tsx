@@ -9,8 +9,8 @@ const Footer = () => {
         {/* Left: Branding */}
         <div>
           <h2 className="text-xl font-black uppercase tracking-widest text-red-600">
-            Kodara
-          </h2>
+  Kodara<span className="text-white">.</span>
+</h2>
           <p className="mt-2 text-white/80">
             Software Engineering Redefined. We build fast, bold, and scalable digital systems.
           </p>
@@ -23,19 +23,21 @@ const Footer = () => {
             <li><Link href="/" className="hover:text-red-600">Home</Link></li>
             <li><Link href="/services" className="hover:text-red-600">Services</Link></li>
             <li><Link href="/blog" className="hover:text-red-600">Blog</Link></li>
-            <li><Link href="/team" className="hover:text-red-600">Team</Link></li>
-            <li><Link href="/contact" className="hover:text-red-600">Contact</Link></li>
+            <li><Link href="/#team" className="hover:text-red-600">Team</Link></li>
+            <li><Link href="/#contact" className="hover:text-red-600">Contact</Link></li>
           </ul>
         </nav>
 
         {/* Right: Contact */}
         <div>
           <h3 className="text-white font-bold uppercase tracking-wide mb-2">Contact</h3>
-          <p className="text-white/80">Email: <a href="mailto:hello@kodara.dev" className="text-red-600 hover:underline">hello@kodara.dev</a></p>
-          <p className="text-white/80">Based in New York, working globally.</p>
+          <p className="text-white/80">Email: <a href="mailto:team@kodara.dev" className="text-red-600 hover:underline">hello@kodara.dev</a></p>
+          <p className="text-white/80">Based in Miami, working globally.</p>
           <div className="mt-4 space-x-4">
             <a href="https://github.com/yourgithub" target="_blank" rel="noopener noreferrer" className="hover:text-red-600">GitHub</a>
             <a href="https://linkedin.com/company/kodara" target="_blank" rel="noopener noreferrer" className="hover:text-red-600">LinkedIn</a>
+            <a href="https://github.com/yourgithub" target="_blank" rel="noopener noreferrer" className="hover:text-red-600">Instagram</a>
+            <a href="https://linkedin.com/company/kodara" target="_blank" rel="noopener noreferrer" className="hover:text-red-600">Facebook</a>
           </div>
         </div>
       </div>
