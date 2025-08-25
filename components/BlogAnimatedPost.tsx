@@ -5,6 +5,7 @@ import Link from "next/link";
 interface PostMeta {
   slug: string;
   title: string;
+  excerpt: string;
   date: string;
   content: string;
 }
@@ -28,7 +29,7 @@ const BlogAnimatedPost = ({
         {post.title}
       </h3>
     </Link>
-    <p className="text-gray-400">{post.content}</p>
+    <p className="text-gray-400">{post.excerpt}</p>
   </motion.div>
 );
 

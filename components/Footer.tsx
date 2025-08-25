@@ -31,7 +31,7 @@ const Footer = () => {
         {/* Right: Contact */}
         <div>
           <h3 className="text-white font-bold uppercase tracking-wide mb-2">Contact</h3>
-          <p className="text-white/80">Email: <a href="mailto:team@kodara.dev" className="text-red-600 hover:underline">hello@kodara.dev</a></p>
+          <p className="text-white/80">Email: <a href="mailto:team@kodara.dev" className="text-red-600 hover:underline">team@kodara.dev</a></p>
           <p className="text-white/80">Based in Miami, working globally.</p>
           <div className="mt-4 space-x-4">
             <a href="https://github.com/yourgithub" target="_blank" rel="noopener noreferrer" className="hover:text-red-600">GitHub</a>

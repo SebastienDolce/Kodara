@@ -16,6 +16,7 @@ declare global {
 interface PostMeta {
   slug: string;
   title: string;
+  excerpt: string;
   date: string;
   content: string;
 }
@@ -82,22 +83,18 @@ const token = await window.grecaptcha.execute('6LfPImkrAAAAAKG2Ybsg0XNXFAn5YCr8U
   const teamMembers = [
   {
     name: "Sebastien",
-    role: "CEO",
+    role: "Founder / Engineer",
     bio: "Sebastien guides Kodara’s direction with a focus on transparency and client success.",
-    image: "/images/sebastien.png", // or use a remote URL
+    image: "/images/sebastien.jpg", // or use a remote URL
   },
   {
-    name: "Rob",
-    role: "CTO",
-    bio: "Rob turns bold ideas into high-performance software, every time.",
-    image: "/images/rob.png",
+    name: "Devs.miami",
+    role: "Agency",
+    bio: "A powerful team of engineers ready to build software that grows with your needs.",
+    image: "/images/devs-miami-logo.jpg",
+    link: "https://devs.miami",
   },
-  {
-    name: "Gabe",
-    role: "CFO",
-    bio: "Gabe keeps everything sustainable—so we can build smart, not just fast.",
-    image: "/images/gabe.png",
-  },
+ 
 ];
 
 
@@ -115,7 +112,7 @@ const token = await window.grecaptcha.execute('6LfPImkrAAAAAKG2Ybsg0XNXFAn5YCr8U
   {
     title: "MVPs & Prototypes",
     slug: "software-engineering",
-    description: "We help you move from rough idea to real, working product—fast.",
+    description: "We help you move from rough idea to real, working product fast.",
   },
   {
     title: "Data Pipelines & Integrations",
@@ -128,7 +125,7 @@ const token = await window.grecaptcha.execute('6LfPImkrAAAAAKG2Ybsg0XNXFAn5YCr8U
 
 
   return (
-    <><script src="https://www.google.com/recaptcha/api.js?render=your_site_key"></script>
+    <><script src="https://www.google.com/recaptcha/api.js?render=6LfPImkrAAAAAKG2Ybsg0XNXFAn5YCr8URjuGJG5"></script>
     <div className="bg-black text-white min-h-screen font-mono overflow-x-hidden">
       <AnimatePresence>
         {loading && (
@@ -234,7 +231,7 @@ const token = await window.grecaptcha.execute('6LfPImkrAAAAAKG2Ybsg0XNXFAn5YCr8U
             ARCHITECTS
           </motion.h2>
 
-          <div className="grid md:grid-cols-3 gap-8">
+<div className="grid md:grid-cols-2 gap-8 justify-center">
             {teamMembers.map((member, index) => (
               <motion.div
                 key={index}
@@ -245,14 +242,14 @@ const token = await window.grecaptcha.execute('6LfPImkrAAAAAKG2Ybsg0XNXFAn5YCr8U
                 className="relative"
               >
                 <div className="bg-black text-white p-8 h-full">
-                  <div className="relative w-full h-48 mb-6">
+<div className="relative w-full h-110 mb-6">
                     <Image
                       src={member.image}
                       alt={member.name}
                       fill
-                      className="object-cover rounded-lg" />
+                      className="object-cover object-center rounded-lg" />
                   </div>
-                  <h3 className="text-3xl font-black mb-2">{member.name}</h3>
+                  <h3 className="text-3xl font-black mb-2"><a href={member.link}>{member.name}</a></h3>
                   <p className="text-red-600 font-bold mb-4">{member.role}</p>
                   <p className="text-gray-400">{member.bio}</p>
                 </div>
@@ -286,7 +283,7 @@ const token = await window.grecaptcha.execute('6LfPImkrAAAAAKG2Ybsg0XNXFAn5YCr8U
                 <Link href={`/blog/${post.slug}`}>
                   <h3 className="text-4xl font-black mb-4 hover:text-red-600 transition-colors">{post.title}</h3>
                 </Link>
-                <p className="text-xl text-gray-400">{post.content}</p>
+                <p className="text-xl text-gray-400">{post.excerpt}</p>
               </motion.div>
             ))}
           </div>
@@ -302,12 +299,12 @@ const token = await window.grecaptcha.execute('6LfPImkrAAAAAKG2Ybsg0XNXFAn5YCr8U
 
           <div className="grid md:grid-cols-2 gap-12">
             <motion.div initial={{ x: -50, opacity: 0 }} animate={inView4 ? { x: 0, opacity: 1 } : {}} transition={{ duration: 0.8 }}>
-              <h3 className="text-4xl font-black mb-8">LET'S BUILD TOGETHER</h3>
+              <h3 className="text-4xl font-black mb-8">LET'S BUILD SOMETHING</h3>
               <p className="text-xl mb-8">Ready to break conventions? We work with startups, enterprises, and bold individuals. Let’s bring your vision to life.</p>
               <div className="space-y-4">
-                <p className="text-xl font-bold">sdolce@kodara.dev</p>
-                <p className="text-xl font-bold">+1 (555) 123-4567</p>
-                <p className="text-xl font-bold">San Francisco, CA</p>
+                <p className="text-xl font-bold">team@kodara.dev</p>
+                <p className="text-xl font-bold">+1 (561) 806-1027</p>
+                <p className="text-xl font-bold">Miami, FL</p>
               </div>
             </motion.div>
 

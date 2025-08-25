@@ -8,6 +8,7 @@ import KodaraClient from "./KodaraClient"; // import the client component
 interface PostMeta {
   slug: string;
   title: string;
+  excerpt: string;
   date: string;
   content: string;
 }
@@ -24,6 +25,7 @@ const getBlogPosts = (): PostMeta[] => {
     return {
       slug: filename.replace(/\.md$/, ""),
       title: data.title,
+      excerpt: data.excerpt || content.slice(0, 150),
       date: String(data.date),
       content: content.slice(0, 150) + "...",
     };

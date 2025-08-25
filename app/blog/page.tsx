@@ -11,6 +11,7 @@ import BlogAnimatedPost from "@/components/BlogAnimatedPost";
 interface PostMeta {
   slug: string;
   title: string;
+  excerpt: string;
   date: string;
   content: string;
 }
@@ -22,12 +23,13 @@ const getBlogPosts = (): PostMeta[] => {
   return filenames.map((filename) => {
     const filePath = path.join(postsDirectory, filename);
     const fileContents = fs.readFileSync(filePath, "utf8");
-    const { data, content } = matter(fileContents);
+    const { data, content, excerpt } = matter(fileContents);
 
     return {
       slug: filename.replace(/\.md$/, ""),
       title: data.title,
       date: String(data.date),
+      excerpt: data.excerpt,
       content: content.slice(0, 150) + "...",
     };
   });
