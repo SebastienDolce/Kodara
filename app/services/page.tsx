@@ -120,7 +120,7 @@ const services = [
         If you’ve been searching <em>“how to hire a web developer”</em> or <em>“where do I begin with my website?”</em>, you’re in the right place.
       </p>
       <a
-        href="mailto:hello@kodara.dev"
+        href="/#contact"
         class="inline-block bg-red-600 hover:bg-red-500 transition-colors font-bold px-6 py-3 rounded-md"
       >
         Schedule a Discovery Call
@@ -217,7 +217,7 @@ const services = [
         Kodara is the partner that helps you move forward with clarity.
       </p>
       <a
-        href="mailto:hello@kodara.dev"
+        href="/#contact"
         class="inline-block bg-red-600 hover:bg-red-500 transition-colors font-bold px-6 py-3 rounded-md"
       >
         Book a Consultation
@@ -313,7 +313,7 @@ const services = [
         We help you launch fast, test smart, and stay in control of your product’s future.
       </p>
       <a
-        href="mailto:hello@kodara.dev"
+        href="/#contact"
         class="inline-block bg-red-600 hover:bg-red-500 transition-colors font-bold px-6 py-3 rounded-md"
       >
         Schedule a Discovery Call
@@ -412,7 +412,7 @@ const services = [
         Let’s build the system that lets your business breathe.
       </p>
       <a
-        href="mailto:hello@kodara.dev"
+        href="/#contact"
         class="inline-block bg-red-600 hover:bg-red-500 transition-colors font-bold px-6 py-3 rounded-md"
       >
         Book a Consultation
