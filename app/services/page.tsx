@@ -24,9 +24,9 @@ const services = [
         Looking for a <span class="font-bold text-white">web developer</span> and not sure where to begin?<br />
         We turn early ideas into market‑ready websites and applications—clearly, efficiently, and with full cost transparency.
       </p>
-      <div class="relative w-full h-64">
+      <div class="relative w-full h-full">
         <img
-          src="https://picsum.photos/seed/webdev/800/400"
+          src="images/web-design.png"
           alt="Abstract development sketch"
           class="object-cover object-center w-full h-full rounded-md shadow-lg"
         />
@@ -95,13 +95,7 @@ const services = [
         <li><span class="font-bold text-white">Established businesses</span> refreshing outdated sites or applications</li>
         <li><span class="font-bold text-white">Non‑technical teams</span> who value clear communication and reliable results</li>
       </ul>
-      <div class="relative w-full h-64">
-        <img
-          src="https://picsum.photos/seed/uiux/800/400"
-          alt="Wireframe notes"
-          class="object-cover object-center w-full h-full rounded-md shadow-lg"
-        />
-      </div>
+      
     </section>
 
     <!-- Common Questions -->
@@ -156,9 +150,9 @@ const services = [
         You don’t need to speak in code to make good technical decisions.  
         We help founders, product teams, and business owners align their tech with their goals clearly and confidently.
       </p>
-      <div class="relative w-full h-64">
+      <div class="relative w-full h-full">
         <img
-          src="https://picsum.photos/seed/consulting/800/400"
+          src="images/consulting.jpg"
           alt="System diagram and team discussion"
           class="object-cover object-center w-full h-full rounded-md shadow-lg"
         />
@@ -197,13 +191,7 @@ const services = [
         <li><span class="font-bold text-white">Strategy Session:</span> You receive a clear, actionable strategy built for your timeline, team, and budget.</li>
         <li><span class="font-bold text-white">Ongoing Support (Optional):</span> Continue working with us as an external CTO, tech lead, or second opinion.</li>
       </ol>
-      <div class="relative w-full h-64">
-        <img
-          src="https://picsum.photos/seed/strategy/800/400"
-          alt="Strategic roadmap wireframe"
-          class="object-cover object-center w-full h-full rounded-md shadow-lg"
-        />
-      </div>
+      
     </section>
 
     <!-- FAQ -->
@@ -258,9 +246,9 @@ const services = [
         Launch quickly, learn fast.  
         We help you test ideas in the real world without committing to full-scale development up front.
       </p>
-      <div class="relative w-full h-64">
+      <div class="relative w-full h-full">
         <img
-          src="https://picsum.photos/seed/mvpdev/800/400"
+          src="images/mvp.jpeg"
           alt="Whiteboard with prototype flow"
           class="object-cover object-center w-full h-full rounded-md shadow-lg"
         />
@@ -299,13 +287,7 @@ const services = [
         <li><span class="font-bold text-white">Launch & Learn:</span> We help you gather feedback from users, investors, or stakeholders to shape next steps.</li>
         <li><span class="font-bold text-white">Option to Build:</span> Ready to scale? We can evolve the MVP into a full product when you’re ready.</li>
       </ol>
-      <div class="relative w-full h-64">
-        <img
-          src="https://picsum.photos/seed/prototype/800/400"
-          alt="Wireframe of MVP screens"
-          class="object-cover object-center w-full h-full rounded-md shadow-lg"
-        />
-      </div>
+      
     </section>
 
     <!-- FAQ -->
@@ -360,9 +342,9 @@ const services = [
         Data should flow where it’s needed cleanly, automatically, and without bottlenecks.  
         We help you connect systems, automate data movement, and streamline operations behind the scenes.
       </p>
-      <div class="relative w-full h-64">
+      <div class="relative w-full h-full">
         <img
-          src="https://picsum.photos/seed/dataflow/800/400"
+          src="images/integrations.png"
           alt="Visual of connected systems"
           class="object-cover object-center w-full h-full rounded-md shadow-lg"
         />
@@ -401,13 +383,7 @@ const services = [
         <li><span class="font-bold text-white">Build & Automate:</span> We implement the data flow from APIs to databases to 3rd-party tools.</li>
         <li><span class="font-bold text-white">Monitor & Support:</span> We provide visibility and support options to ensure long-term success.</li>
       </ol>
-      <div class="relative w-full h-64">
-        <img
-          src="https://picsum.photos/seed/pipeline/800/400"
-          alt="Data integration sketch"
-          class="object-cover object-center w-full h-full rounded-md shadow-lg"
-        />
-      </div>
+     
     </section>
 
     <!-- FAQ -->
