@@ -4,7 +4,7 @@ import { ReactNode } from "react";
 import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 import Menu from "@/components/Menu";
 import Footer from "@/components/Footer";
-import WorkshopRail from "@/components/WorkshopRail";
+import DataBus from "@/components/DataBus";
 
 const display = Space_Grotesk({
   subsets: ["latin"],
@@ -39,10 +39,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${display.variable} ${mono.variable}`}>
-      <body className="bg-[#080808] text-[#f3f0ea] antialiased">
+      <body className="relative bg-[#080808] text-[#f3f0ea] antialiased">
         <Menu />
-        <WorkshopRail />
-        <main>{children}</main>
+        <DataBus />
+        <main className="relative z-10">{children}</main>
         <Footer />
       </body>
     </html>
