@@ -127,7 +127,10 @@ function ProjectFlow({ kind }: { kind: VisualKind }) {
   const flow = projectFlows[kind];
 
   return (
-    <div className="relative flex min-h-[250px] flex-col justify-center py-6 lg:pl-8">
+    <div
+      data-bus-project-card={kind}
+      className="relative flex min-h-[250px] flex-col justify-center border border-red-600/35 bg-white/[0.015] p-6 md:p-7 min-[900px]:border-transparent"
+    >
       <div className="kodara-mono text-[9px] font-semibold uppercase tracking-[0.2em] text-white/30">
         {flow.eyebrow}
       </div>
@@ -137,16 +140,7 @@ function ProjectFlow({ kind }: { kind: VisualKind }) {
         <div className="relative grid grid-cols-3 gap-3">
           {flow.nodes.map((node, index) => (
             <div key={node} className={index === 1 ? "text-center" : index === 2 ? "text-right" : "text-left"}>
-              <span
-                {...(index === 0
-                  ? {
-                      "data-bus-node": `project-${kind}`,
-                      "data-bus-position": "center",
-                    }
-                  : {})}
-                className="inline-block h-3.5 w-3.5 bg-red-600"
-                aria-hidden="true"
-              />
+              <span className="inline-block h-3.5 w-3.5 bg-red-600" aria-hidden="true" />
               <div className="kodara-mono mt-5 text-[9px] font-bold uppercase tracking-[0.15em] text-white/50">
                 {node}
               </div>
@@ -265,13 +259,13 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
           data-bus-container
           className="relative mx-auto grid max-w-[1500px] gap-16 lg:grid-cols-[1.15fr_.85fr] lg:items-end"
         >
-          <div>
+          <div data-bus-hero-copy>
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               className="kodara-mono mb-8 flex items-center gap-3 text-[10px] font-bold tracking-[0.26em] text-white/45"
             >
-              <span data-bus-start className="h-3 w-3 shrink-0 bg-red-600" />
+              <span className="h-3 w-3 shrink-0 bg-red-600" />
               FOUNDER-LED PRODUCT SYSTEMS STUDIO
             </motion.div>
 
@@ -319,8 +313,8 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
       </section>
 
       <section id="work" data-bus-section="work" className="px-5 py-24 md:px-10 lg:px-16 lg:py-32">
-        <div className="mx-auto max-w-[1500px]">
-          <div className="mb-16 grid gap-8 lg:grid-cols-[.65fr_1.35fr] lg:items-end">
+        <div data-bus-work-container className="mx-auto max-w-[1500px]">
+          <div data-bus-work-heading className="mb-16 grid gap-8 lg:grid-cols-[.65fr_1.35fr] lg:items-end">
             <div className="kodara-mono text-[10px] font-bold uppercase tracking-[0.28em] text-red-500">Selected builds</div>
             <h2 className="text-5xl font-bold leading-[0.92] tracking-[-0.055em] sm:text-7xl lg:text-8xl">
               Evidence beats a services page.
@@ -329,7 +323,11 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
 
           <div className="border-t border-white/15">
             {projects.map((project) => (
-              <article key={project.title} className="border-b border-white/15 py-12 lg:py-16">
+              <article
+                key={project.title}
+                data-bus-project-row={project.visual}
+                className="border-b border-white/15 py-12 lg:py-16"
+              >
                 <div className="grid gap-10 lg:grid-cols-[.1fr_.8fr_1.1fr] lg:items-start">
                   <div className="kodara-mono text-[10px] font-bold tracking-[0.2em] text-white/28">{project.index}</div>
                   <div>
