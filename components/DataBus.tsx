@@ -45,6 +45,7 @@ export default function DataBus() {
   const [layout, setLayout] = useState<LayoutState | null>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
   const [packetRun, setPacketRun] = useState<number | null>(null);
+  const hasLayout = Boolean(layout);
 
   useEffect(() => {
     if (pathname !== "/") return;
@@ -132,7 +133,7 @@ export default function DataBus() {
   }, [pathname]);
 
   useEffect(() => {
-    if (pathname !== "/" || reducedMotion || !layout) {
+    if (pathname !== "/" || reducedMotion || !hasLayout) {
       setPacketRun(null);
       return;
     }
@@ -147,13 +148,11 @@ export default function DataBus() {
       window.clearTimeout(firstPacket);
       window.clearInterval(interval);
     };
-  }, [pathname, reducedMotion, Boolean(layout)]);
+  }, [pathname, reducedMotion, hasLayout]);
 
   const packetTargets = useMemo(() => {
     if (!layout) return [];
-    return layout.nodes.filter((node) =>
-      /project|capability|founder|lab|note|contact/.test(node.id)
-    );
+    return layout.nodes.filter((node) => /project|capability|founder|lab|note/.test(node.id));
   }, [layout]);
 
   const packetPath = useMemo(() => {
@@ -231,7 +230,6 @@ export default function DataBus() {
       </g>
 
       <g fill="var(--kodara-red)">
-        <rect x={layout.start.x - 5} y={layout.start.y - 5} width="10" height="10" />
         <rect x={layout.heroCard.left - 4} y={layout.heroCard.top - 4} width="8" height="8" />
 
         {layout.sections.map((section) => (
@@ -248,10 +246,13 @@ export default function DataBus() {
           const section = parentSectionFor(node, layout.sections);
           if (!section) return null;
           return (
-            <g key={`node-${node.id}`}>
-              <rect x={node.x - 3} y={section.y - 3} width="6" height="6" />
-              <rect x={node.x - 4} y={node.y - 4} width="8" height="8" />
-            </g>
+            <rect
+              key={`drop-${node.id}`}
+              x={node.x - 3}
+              y={section.y - 3}
+              width="6"
+              height="6"
+            />
           );
         })}
 
