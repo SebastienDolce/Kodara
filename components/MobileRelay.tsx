@@ -101,7 +101,7 @@ export default function MobileRelay() {
   const hideTimer = useRef<number | null>(null);
   const travelTimer = useRef<number | null>(null);
   const fadeTimer = useRef<number | null>(null);
-  const settleTimer = useRef<number | null>(null);
+  const cueTimer = useRef<number | null>(null);
   const lastAnyTrigger = useRef(0);
   const lastTriggerById = useRef(new Map<string, number>());
   const activeCandidate = useRef<{ element: HTMLElement; descriptor: RelayDescriptor } | null>(null);
@@ -124,7 +124,7 @@ export default function MobileRelay() {
 
       const now = Date.now();
       const lastForTarget = lastTriggerById.current.get(descriptor.id) ?? 0;
-      if (now - lastAnyTrigger.current < 1900 || now - lastForTarget < 9000) return;
+      if (now - lastAnyTrigger.current < 1500 || now - lastForTarget < 9000) return;
 
       lastAnyTrigger.current = now;
       lastTriggerById.current.set(descriptor.id, now);
@@ -150,29 +150,26 @@ export default function MobileRelay() {
       }, 1580);
     };
 
-    const candidateIsSettled = (element: HTMLElement) => {
+    const candidateIsAtCuePoint = (element: HTMLElement) => {
       const rect = element.getBoundingClientRect();
       const viewportHeight = window.innerHeight;
-      const visibleTop = Math.max(0, rect.top);
-      const visibleBottom = Math.min(viewportHeight, rect.bottom);
-      const visibleHeight = Math.max(0, visibleBottom - visibleTop);
-      const minimumVisible = Math.min(rect.height * 0.3, viewportHeight * 0.2);
-      const anchor = rect.top + Math.min(rect.height * 0.35, 180);
 
+      // Fire while the next component is still low in the viewport. The packet
+      // becomes the introduction, then the user naturally scrolls into the copy.
       return (
-        visibleHeight >= minimumVisible &&
-        anchor >= viewportHeight * 0.2 &&
-        anchor <= viewportHeight * 0.78
+        rect.bottom >= viewportHeight * 0.72 &&
+        rect.top >= viewportHeight * 0.62 &&
+        rect.top <= viewportHeight * 0.96
       );
     };
 
-    const scheduleSettledTrigger = () => {
-      if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
-      settleTimer.current = window.setTimeout(() => {
+    const scheduleCueTrigger = () => {
+      if (cueTimer.current !== null) window.clearTimeout(cueTimer.current);
+      cueTimer.current = window.setTimeout(() => {
         const candidate = activeCandidate.current;
-        if (!candidate || !candidateIsSettled(candidate.element)) return;
+        if (!candidate || !candidateIsAtCuePoint(candidate.element)) return;
         trigger(candidate.element, candidate.descriptor);
-      }, 240);
+      }, 80);
     };
 
     const observer = new IntersectionObserver(
@@ -190,10 +187,11 @@ export default function MobileRelay() {
               Boolean(candidate.descriptor)
           )
           .sort((a, b) => {
-            const center = window.innerHeight * 0.48;
-            const aAnchor = a.entry.boundingClientRect.top + Math.min(a.entry.boundingClientRect.height * 0.35, 180);
-            const bAnchor = b.entry.boundingClientRect.top + Math.min(b.entry.boundingClientRect.height * 0.35, 180);
-            return Math.abs(aAnchor - center) - Math.abs(bAnchor - center);
+            const cueY = window.innerHeight * 0.82;
+            return (
+              Math.abs(a.entry.boundingClientRect.top - cueY) -
+              Math.abs(b.entry.boundingClientRect.top - cueY)
+            );
           });
 
         const candidate = candidates[0];
@@ -203,11 +201,11 @@ export default function MobileRelay() {
           element: candidate.entry.target as HTMLElement,
           descriptor: candidate.descriptor,
         };
-        scheduleSettledTrigger();
+        scheduleCueTrigger();
       },
       {
-        threshold: [0.3, 0.5, 0.7],
-        rootMargin: "-14% 0px -16% 0px",
+        threshold: [0, 0.06, 0.12],
+        rootMargin: "0px",
       }
     );
 
@@ -220,7 +218,7 @@ export default function MobileRelay() {
 
     const handleScroll = () => {
       if (!mobile.matches || reducedMotion.matches) return;
-      scheduleSettledTrigger();
+      scheduleCueTrigger();
     };
 
     const handleMediaChange = () => {
@@ -239,7 +237,7 @@ export default function MobileRelay() {
     return () => {
       observer.disconnect();
       clearAnimationTimers();
-      if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
+      if (cueTimer.current !== null) window.clearTimeout(cueTimer.current);
       window.removeEventListener("scroll", handleScroll);
       mobile.removeEventListener?.("change", handleMediaChange);
       reducedMotion.removeEventListener?.("change", handleMediaChange);
