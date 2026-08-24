@@ -32,8 +32,13 @@ const toDocumentRect = (element: HTMLElement): MeasuredRect => {
   };
 };
 
-const squarePath = (card: MeasuredRect) =>
+const cardPath = (card: MeasuredRect) =>
   `M ${card.left} ${card.top} H ${card.right} V ${card.bottom} H ${card.left} V ${card.top}`;
+
+const parentSectionFor = (node: BusNode, sections: BusSection[]) =>
+  [...sections]
+    .filter((section) => section.y <= node.y + 1)
+    .sort((a, b) => b.y - a.y)[0];
 
 export default function DataBus() {
   const pathname = usePathname();
@@ -86,10 +91,11 @@ export default function DataBus() {
         const nodes = Array.from(document.querySelectorAll<HTMLElement>("[data-bus-node]"))
           .map((element) => {
             const rect = element.getBoundingClientRect();
+            const centered = element.dataset.busPosition === "center";
             return {
               id: element.dataset.busNode || "node",
-              x: rect.left,
-              y: window.scrollY + rect.top,
+              x: centered ? rect.left + rect.width / 2 : rect.left,
+              y: window.scrollY + (centered ? rect.top + rect.height / 2 : rect.top),
             };
           })
           .filter((node) => node.x > start.x + 8);
@@ -154,7 +160,9 @@ export default function DataBus() {
     if (!layout || packetRun === null || packetTargets.length === 0) return null;
 
     const target = packetTargets[packetRun % packetTargets.length];
+    const section = parentSectionFor(target, layout.sections);
     const { start, heroCard, busX } = layout;
+    const targetSectionY = section?.y ?? target.y;
 
     return [
       `M ${start.x} ${start.y}`,
@@ -164,8 +172,9 @@ export default function DataBus() {
       `V ${heroCard.bottom}`,
       `H ${heroCard.left}`,
       `H ${busX}`,
-      `V ${target.y}`,
+      `V ${targetSectionY}`,
       `H ${target.x}`,
+      `V ${target.y}`,
     ].join(" ");
   }, [layout, packetRun, packetTargets]);
 
@@ -188,16 +197,13 @@ export default function DataBus() {
       style={{ width: "100%", height: layout.height }}
     >
       <g fill="none" stroke="var(--kodara-red)" strokeWidth="1.15" strokeLinecap="square">
-        <path
-          d={`M ${layout.busX} ${trunkStartY} V ${trunkEndY}`}
-          opacity="0.62"
-        />
+        <path d={`M ${layout.busX} ${trunkStartY} V ${trunkEndY}`} opacity="0.62" />
 
         <path
           d={`M ${layout.start.x} ${layout.start.y} H ${layout.heroCard.left} V ${layout.heroCard.top}`}
           opacity="0.78"
         />
-        <path d={squarePath(layout.heroCard)} opacity="0.84" />
+        <path d={cardPath(layout.heroCard)} opacity="0.86" />
         <path
           d={`M ${layout.heroCard.left} ${layout.heroCard.bottom} H ${layout.busX}`}
           opacity="0.78"
@@ -207,17 +213,21 @@ export default function DataBus() {
           <path
             key={`section-${section.id}`}
             d={`M ${layout.busX} ${section.y} H ${layout.contentRight}`}
-            opacity="0.46"
+            opacity="0.5"
           />
         ))}
 
-        {layout.nodes.map((node) => (
-          <path
-            key={`branch-${node.id}`}
-            d={`M ${layout.busX} ${node.y} H ${node.x}`}
-            opacity="0.42"
-          />
-        ))}
+        {layout.nodes.map((node) => {
+          const section = parentSectionFor(node, layout.sections);
+          if (!section) return null;
+          return (
+            <path
+              key={`branch-${node.id}`}
+              d={`M ${node.x} ${section.y} V ${node.y}`}
+              opacity="0.42"
+            />
+          );
+        })}
       </g>
 
       <g fill="var(--kodara-red)">
@@ -234,15 +244,16 @@ export default function DataBus() {
           />
         ))}
 
-        {layout.nodes.map((node) => (
-          <rect
-            key={`node-${node.id}`}
-            x={node.x - 4}
-            y={node.y - 4}
-            width="8"
-            height="8"
-          />
-        ))}
+        {layout.nodes.map((node) => {
+          const section = parentSectionFor(node, layout.sections);
+          if (!section) return null;
+          return (
+            <g key={`node-${node.id}`}>
+              <rect x={node.x - 3} y={section.y - 3} width="6" height="6" />
+              <rect x={node.x - 4} y={node.y - 4} width="8" height="8" />
+            </g>
+          );
+        })}
 
         {!reducedMotion && packetPath && packetRun !== null && (
           <rect key={`packet-${packetRun}`} x="-5" y="-5" width="10" height="10">
