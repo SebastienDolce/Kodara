@@ -21,10 +21,11 @@ type LayoutState = {
   projects: ProjectRoute[];
   nodes: BusNode[];
   sections: BusSection[];
+  footerEnd: Point | null;
 };
 
 const PACKET_INTERVAL_MS = 16000;
-const PACKET_DURATION_SECONDS = 9;
+const PACKET_DURATION_SECONDS = 11;
 
 const toDocumentRect = (element: HTMLElement): MeasuredRect => {
   const rect = element.getBoundingClientRect();
@@ -73,17 +74,20 @@ export default function DataBus() {
         }
 
         const heroCopyElement = document.querySelector<HTMLElement>("[data-bus-hero-copy]");
+        const heroTitleElement = document.querySelector<HTMLElement>("[data-bus-hero-title]");
         const heroCardElement = document.querySelector<HTMLElement>("[data-bus-card]");
         const workElement = document.querySelector<HTMLElement>("#work");
         const workHeadingElement = document.querySelector<HTMLElement>("[data-bus-work-heading]");
         const workContainerElement = document.querySelector<HTMLElement>("[data-bus-work-container]");
+        const footerEndElement = document.querySelector<HTMLElement>("[data-bus-end]");
 
-        if (!heroCopyElement || !heroCardElement || !workElement || !workHeadingElement || !workContainerElement) {
+        if (!heroCopyElement || !heroTitleElement || !heroCardElement || !workElement || !workHeadingElement || !workContainerElement) {
           setLayout(null);
           return;
         }
 
         const heroCopy = toDocumentRect(heroCopyElement);
+        const heroTitle = toDocumentRect(heroTitleElement);
         const heroCard = toDocumentRect(heroCardElement);
         const work = toDocumentRect(workElement);
         const workHeading = toDocumentRect(workHeadingElement);
@@ -92,7 +96,7 @@ export default function DataBus() {
 
         const start = {
           x: heroCopy.right + gapWidth * 0.5,
-          y: Math.max(heroCopy.top + 70, heroCard.top - 46),
+          y: heroTitle.top + 14,
         };
 
         const routeX = Math.max(18, workHeading.left - 20);
@@ -132,6 +136,16 @@ export default function DataBus() {
           })
           .filter((node) => !node.id.startsWith("project-") && node.id !== "contact");
 
+        const footerEnd = footerEndElement
+          ? (() => {
+              const rect = footerEndElement.getBoundingClientRect();
+              return {
+                x: rect.left + rect.width / 2,
+                y: window.scrollY + rect.top + rect.height / 2,
+              };
+            })()
+          : null;
+
         setLayout({
           width: window.innerWidth,
           height: document.documentElement.scrollHeight,
@@ -144,6 +158,7 @@ export default function DataBus() {
           projects,
           nodes,
           sections,
+          footerEnd,
         });
       });
     };
@@ -187,7 +202,7 @@ export default function DataBus() {
   const mainPath = useMemo(() => {
     if (!layout) return null;
 
-    const { start, heroCard, workTop, routeX, projects, sections, contentRight } = layout;
+    const { start, heroCard, workTop, routeX, projects, sections, contentRight, footerEnd } = layout;
     const parts = [
       `M ${start.x} ${start.y}`,
       `V ${heroCard.top}`,
@@ -221,6 +236,10 @@ export default function DataBus() {
       lowerSections.slice(1).forEach((section) => parts.push(`V ${section.y}`));
     }
 
+    if (footerEnd) {
+      parts.push(`V ${footerEnd.y}`, `H ${footerEnd.x}`);
+    }
+
     return parts.join(" ");
   }, [layout]);
 
@@ -229,6 +248,12 @@ export default function DataBus() {
   const lowerSections = layout.sections
     .filter((section) => section.y > lastProjectBottom(layout.projects, layout.workTop))
     .sort((a, b) => a.y - b.y);
+
+  const regularNodes = layout.nodes.filter((node) => !node.id.startsWith("lab-"));
+  const labNodes = layout.nodes.filter((node) => node.id.startsWith("lab-")).sort((a, b) => a.y - b.y);
+  const labSection = lowerSections.find((section) => section.id === "lab");
+  const labBusX = labNodes.length > 0 ? Math.max(layout.contentLeft + 8, Math.min(...labNodes.map((node) => node.x)) - 28) : null;
+  const firstProjectCardLeft = layout.projects[0]?.card.left ?? layout.contentRight;
 
   return (
     <svg
@@ -243,12 +268,12 @@ export default function DataBus() {
         <path d={mainPath} opacity="0.76" />
         <path d={cardPath(layout.heroCard)} opacity="0.9" />
 
-        <path d={`M ${layout.routeX} ${layout.workTop} H ${layout.contentRight}`} opacity="0.56" />
+        <path d={`M ${layout.routeX} ${layout.workTop} H ${firstProjectCardLeft}`} opacity="0.56" />
 
         {layout.projects.map((project) => (
           <g key={`project-${project.id}`}>
-            <path d={`M ${layout.routeX} ${project.rowTop} H ${layout.contentRight}`} opacity="0.48" />
-            <path d={`M ${layout.routeX} ${project.rowBottom} H ${layout.contentRight}`} opacity="0.48" />
+            <path d={`M ${layout.routeX} ${project.rowTop} H ${project.card.left}`} opacity="0.48" />
+            <path d={`M ${layout.routeX} ${project.rowBottom} H ${project.card.left}`} opacity="0.48" />
             <path d={cardPath(project.card)} opacity="0.84" />
           </g>
         ))}
@@ -261,11 +286,20 @@ export default function DataBus() {
           />
         ))}
 
-        {layout.nodes.map((node) => {
+        {regularNodes.map((node) => {
           const section = parentSectionFor(node, lowerSections);
           if (!section || node.y <= section.y) return null;
           return <path key={`branch-${node.id}`} d={`M ${node.x} ${section.y} V ${node.y}`} opacity="0.36" />;
         })}
+
+        {labSection && labBusX !== null && labNodes.length > 0 && (
+          <g>
+            <path d={`M ${labBusX} ${labSection.y} V ${labNodes[labNodes.length - 1].y}`} opacity="0.42" />
+            {labNodes.map((node) => (
+              <path key={`lab-tap-${node.id}`} d={`M ${labBusX} ${node.y} H ${node.x}`} opacity="0.5" />
+            ))}
+          </g>
+        )}
       </g>
 
       <g fill="var(--kodara-red)">
@@ -288,6 +322,10 @@ export default function DataBus() {
             height="7"
           />
         ))}
+
+        {labSection && labBusX !== null && (
+          <rect x={labBusX - 3} y={labSection.y - 3} width="6" height="6" />
+        )}
 
         {!reducedMotion && packetRun !== null && (
           <rect key={`packet-${packetRun}`} x="-5" y="-5" width="10" height="10">
