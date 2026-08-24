@@ -7,11 +7,15 @@ const Footer = () => {
     <footer className="relative z-10 overflow-hidden border-t border-white/10 bg-[#080808] px-5 pb-10 pt-14 text-white md:px-10 lg:px-16 lg:pt-20">
       <div className="mx-auto max-w-[1500px]">
         <Link href="/" aria-label="Kodara home" className="block border-b border-white/10 pb-10">
-          <div className="flex items-start justify-between gap-5">
+          <div className="flex items-start gap-4 md:gap-6">
             <span className="text-[20vw] font-black uppercase leading-[0.72] tracking-[-0.085em] sm:text-[17vw] lg:text-[13.8rem] xl:text-[16rem]">
               KODARA
             </span>
-            <span className="mt-2 h-5 w-5 shrink-0 bg-red-600 md:h-8 md:w-8" aria-hidden="true" />
+            <span
+              data-bus-end
+              className="mt-2 h-5 w-5 shrink-0 bg-red-600 md:mt-3 md:h-8 md:w-8"
+              aria-hidden="true"
+            />
           </div>
         </Link>
 
