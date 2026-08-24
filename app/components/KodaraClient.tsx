@@ -270,6 +270,7 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
             </motion.div>
 
             <motion.h1
+              data-bus-hero-title
               initial={{ opacity: 0, y: 24 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: 0.06, duration: 0.7 }}
@@ -456,20 +457,20 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
                   state: "BUILDING",
                 },
               ].map((item, index) => (
-                <div key={item.title} className="grid gap-5 border-b border-white/15 py-9 md:grid-cols-[60px_1fr_auto] md:items-start">
-                  <div className="kodara-mono text-[9px] text-white/28">{item.n}</div>
-                  <div>
-                    <h3 className="text-3xl font-bold tracking-[-0.04em] md:text-4xl">{item.title}</h3>
-                    <p className="mt-4 max-w-2xl leading-7 text-white/45">{item.body}</p>
-                  </div>
-                  <div className="kodara-mono flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.16em] text-red-400">
+                <div key={item.title} className="grid gap-5 border-b border-white/15 py-9 md:grid-cols-[150px_1fr] md:gap-8 md:items-start">
+                  <div className="kodara-mono flex items-center gap-3 pt-1 text-[9px] font-bold uppercase tracking-[0.15em] text-red-400">
                     <span
                       data-bus-node={`lab-${index}`}
                       data-bus-position="center"
-                      className="h-2 w-2 bg-red-600"
+                      className="h-2 w-2 shrink-0 bg-red-600"
                       aria-hidden="true"
                     />
-                    {item.state}
+                    <span>{item.state}</span>
+                    <span className="ml-auto text-white/25">{item.n}</span>
+                  </div>
+                  <div>
+                    <h3 className="text-3xl font-bold tracking-[-0.04em] md:text-4xl">{item.title}</h3>
+                    <p className="mt-4 max-w-2xl leading-7 text-white/45">{item.body}</p>
                   </div>
                 </div>
               ))}
