@@ -133,18 +133,20 @@ function ProjectFlow({ kind }: { kind: VisualKind }) {
       </div>
 
       <div className="relative mt-12">
-        <div className="absolute left-0 right-0 top-[7px] h-px bg-red-600/75" aria-hidden="true" />
-        <motion.span
-          className="absolute top-[3px] h-[9px] w-[9px] bg-red-600"
-          animate={{ left: ["0%", "calc(100% - 9px)", "0%"] }}
-          transition={{ duration: 8, repeat: Infinity, ease: "linear" }}
-          aria-hidden="true"
-        />
-
+        <div className="absolute left-0 right-0 top-[7px] h-px bg-red-600/70" aria-hidden="true" />
         <div className="relative grid grid-cols-3 gap-3">
           {flow.nodes.map((node, index) => (
-            <div key={node} className={`${index === 1 ? "text-center" : index === 2 ? "text-right" : "text-left"}`}>
-              <span className="inline-block h-3.5 w-3.5 bg-red-600" aria-hidden="true" />
+            <div key={node} className={index === 1 ? "text-center" : index === 2 ? "text-right" : "text-left"}>
+              <span
+                {...(index === 0
+                  ? {
+                      "data-bus-node": `project-${kind}`,
+                      "data-bus-position": "center",
+                    }
+                  : {})}
+                className="inline-block h-3.5 w-3.5 bg-red-600"
+                aria-hidden="true"
+              />
               <div className="kodara-mono mt-5 text-[9px] font-bold uppercase tracking-[0.15em] text-white/50">
                 {node}
               </div>
@@ -158,30 +160,30 @@ function ProjectFlow({ kind }: { kind: VisualKind }) {
   );
 }
 
-function HeroFlow({ activeSystem, setActiveSystem }: { activeSystem: string; setActiveSystem: (key: string) => void }) {
+function HeroFlow({
+  activeSystem,
+  setActiveSystem,
+}: {
+  activeSystem: string;
+  setActiveSystem: (key: string) => void;
+}) {
   const activeIndex = Math.max(0, systemSteps.findIndex((step) => step.key === activeSystem));
   const active = systemSteps[activeIndex];
 
   return (
     <motion.div
+      data-bus-card
       initial={{ opacity: 0, x: 20 }}
       animate={{ opacity: 1, x: 0 }}
       transition={{ delay: 0.2, duration: 0.65 }}
-      className="relative py-8 lg:pl-8"
+      className="relative border border-red-600/45 bg-black/35 p-6 backdrop-blur-[2px] md:p-8 min-[900px]:border-transparent lg:p-9"
     >
       <div className="kodara-mono text-[9px] font-semibold uppercase tracking-[0.22em] text-white/30">
         One system / three jobs
       </div>
 
       <div className="relative mt-10">
-        <div className="absolute left-0 right-0 top-[7px] h-px bg-red-600/80" aria-hidden="true" />
-        <motion.span
-          className="absolute top-[3px] h-[9px] w-[9px] bg-red-600"
-          animate={{ left: [`${activeIndex * 50}%`, `${Math.min(100, activeIndex * 50 + 50)}%`, `${activeIndex * 50}%`] }}
-          transition={{ duration: 3.8, repeat: Infinity, ease: "easeInOut" }}
-          aria-hidden="true"
-        />
-
+        <div className="absolute left-0 right-0 top-[7px] h-px bg-red-600/78" aria-hidden="true" />
         <div className="relative grid grid-cols-3 gap-2">
           {systemSteps.map((step, index) => {
             const selected = step.key === activeSystem;
@@ -189,16 +191,23 @@ function HeroFlow({ activeSystem, setActiveSystem }: { activeSystem: string; set
               <button
                 key={step.key}
                 type="button"
+                aria-pressed={selected}
                 onMouseEnter={() => setActiveSystem(step.key)}
                 onFocus={() => setActiveSystem(step.key)}
                 onClick={() => setActiveSystem(step.key)}
-                className={`${index === 1 ? "text-center" : index === 2 ? "text-right" : "text-left"}`}
+                className={index === 1 ? "text-center" : index === 2 ? "text-right" : "text-left"}
               >
                 <span
-                  className={`inline-block h-3.5 w-3.5 transition-transform ${selected ? "rotate-45 bg-red-600" : "bg-red-600/55"}`}
+                  className={`inline-block h-3.5 w-3.5 transition-transform ${
+                    selected ? "rotate-45 bg-red-600" : "bg-red-600/55"
+                  }`}
                   aria-hidden="true"
                 />
-                <div className={`kodara-mono mt-5 text-[9px] font-bold tracking-[0.16em] ${selected ? "text-white" : "text-white/35"}`}>
+                <div
+                  className={`kodara-mono mt-5 text-[9px] font-bold tracking-[0.16em] ${
+                    selected ? "text-white" : "text-white/35"
+                  }`}
+                >
                   {step.label}
                 </div>
               </button>
@@ -207,7 +216,12 @@ function HeroFlow({ activeSystem, setActiveSystem }: { activeSystem: string; set
         </div>
       </div>
 
-      <motion.div key={active.key} initial={{ opacity: 0, y: 7 }} animate={{ opacity: 1, y: 0 }} className="mt-12 max-w-xl">
+      <motion.div
+        key={active.key}
+        initial={{ opacity: 0, y: 7 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="mt-12 max-w-xl"
+      >
         <h2 className="text-3xl font-bold leading-tight tracking-[-0.045em] md:text-4xl">{active.title}</h2>
         <p className="mt-5 text-sm leading-7 text-white/45">{active.body}</p>
       </motion.div>
@@ -247,14 +261,18 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
     <div className="min-h-screen overflow-x-hidden bg-[#080808] text-[#f3f0ea] selection:bg-red-600 selection:text-white">
       <section id="home" className="relative min-h-[94vh] border-b border-white/10 px-5 pb-20 pt-36 md:px-10 lg:px-16">
         <div className="pointer-events-none absolute inset-0 kodara-grid opacity-45" />
-        <div className="relative mx-auto grid max-w-[1500px] gap-16 lg:grid-cols-[1.15fr_.85fr] lg:items-end">
+        <div
+          data-bus-container
+          className="relative mx-auto grid max-w-[1500px] gap-16 lg:grid-cols-[1.15fr_.85fr] lg:items-end"
+        >
           <div>
             <motion.div
               initial={{ opacity: 0, y: 12 }}
               animate={{ opacity: 1, y: 0 }}
               className="kodara-mono mb-8 flex items-center gap-3 text-[10px] font-bold tracking-[0.26em] text-white/45"
             >
-              <span className="h-3 w-3 bg-red-600" /> FOUNDER-LED PRODUCT SYSTEMS STUDIO
+              <span data-bus-start className="h-3 w-3 shrink-0 bg-red-600" />
+              FOUNDER-LED PRODUCT SYSTEMS STUDIO
             </motion.div>
 
             <motion.h1
@@ -279,7 +297,10 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
               <p className="max-w-2xl text-lg leading-8 text-white/58 md:text-xl">
                 Kodara turns messy workflows and ambitious ideas into software, AI automation, and infrastructure that actually works.
               </p>
-              <Link href="#work" className="group inline-flex items-center gap-3 border-b border-white/30 pb-2 text-sm font-bold uppercase tracking-[0.16em] hover:border-red-600 hover:text-red-500">
+              <Link
+                href="#work"
+                className="group inline-flex items-center gap-3 border-b border-white/30 pb-2 text-sm font-bold uppercase tracking-[0.16em] hover:border-red-600 hover:text-red-500"
+              >
                 See what we build
                 <ArrowDownRight className="h-4 w-4 transition-transform group-hover:translate-x-1 group-hover:translate-y-1" />
               </Link>
@@ -297,11 +318,13 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
         </div>
       </section>
 
-      <section id="work" className="px-5 py-24 md:px-10 lg:px-16 lg:py-32">
+      <section id="work" data-bus-section="work" className="px-5 py-24 md:px-10 lg:px-16 lg:py-32">
         <div className="mx-auto max-w-[1500px]">
           <div className="mb-16 grid gap-8 lg:grid-cols-[.65fr_1.35fr] lg:items-end">
             <div className="kodara-mono text-[10px] font-bold uppercase tracking-[0.28em] text-red-500">Selected builds</div>
-            <h2 className="text-5xl font-bold leading-[0.92] tracking-[-0.055em] sm:text-7xl lg:text-8xl">Evidence beats a services page.</h2>
+            <h2 className="text-5xl font-bold leading-[0.92] tracking-[-0.055em] sm:text-7xl lg:text-8xl">
+              Evidence beats a services page.
+            </h2>
           </div>
 
           <div className="border-t border-white/15">
@@ -310,12 +333,18 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
                 <div className="grid gap-10 lg:grid-cols-[.1fr_.8fr_1.1fr] lg:items-start">
                   <div className="kodara-mono text-[10px] font-bold tracking-[0.2em] text-white/28">{project.index}</div>
                   <div>
-                    <div className="kodara-mono mb-4 text-[10px] font-bold uppercase tracking-[0.2em] text-red-500">{project.eyebrow}</div>
+                    <div className="kodara-mono mb-4 text-[10px] font-bold uppercase tracking-[0.2em] text-red-500">
+                      {project.eyebrow}
+                    </div>
                     <h3 className="text-4xl font-bold tracking-[-0.045em] md:text-5xl">{project.title}</h3>
-                    <p className="mt-7 max-w-xl text-2xl font-bold leading-tight tracking-[-0.02em] text-white/90">{project.statement}</p>
+                    <p className="mt-7 max-w-xl text-2xl font-bold leading-tight tracking-[-0.02em] text-white/90">
+                      {project.statement}
+                    </p>
                     <p className="mt-5 max-w-xl text-base leading-7 text-white/45">{project.description}</p>
                     <div className="kodara-mono mt-7 flex flex-wrap gap-x-4 gap-y-2 text-[9px] font-bold uppercase tracking-[0.13em] text-white/38">
-                      {project.tags.map((tag) => <span key={tag}>{tag}</span>)}
+                      {project.tags.map((tag) => (
+                        <span key={tag}>{tag}</span>
+                      ))}
                     </div>
                   </div>
                   <ProjectFlow kind={project.visual} />
@@ -326,20 +355,29 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
         </div>
       </section>
 
-      <section id="services" className="bg-[#f2efe8] px-5 py-24 text-black md:px-10 lg:px-16 lg:py-32">
+      <section id="services" data-bus-section="services" className="bg-[#f2efe8] px-5 py-24 text-black md:px-10 lg:px-16 lg:py-32">
         <div className="mx-auto max-w-[1500px]">
           <div className="grid gap-14 lg:grid-cols-[.72fr_1.28fr]">
             <div>
               <div className="kodara-mono text-[10px] font-bold uppercase tracking-[0.28em] text-red-600">What Kodara does</div>
-              <h2 className="mt-6 text-5xl font-bold leading-[0.92] tracking-[-0.055em] md:text-7xl">Complicated things should feel simple.</h2>
-              <p className="mt-8 max-w-xl text-lg leading-8 text-black/60">The stack changes. The job does not: understand the actual problem, build the right system, and remove the friction around it.</p>
+              <h2 className="mt-6 text-5xl font-bold leading-[0.92] tracking-[-0.055em] md:text-7xl">
+                Complicated things should feel simple.
+              </h2>
+              <p className="mt-8 max-w-xl text-lg leading-8 text-black/60">
+                The stack changes. The job does not: understand the actual problem, build the right system, and remove the friction around it.
+              </p>
             </div>
 
             <div className="border-t border-black/15">
               {capabilities.map((capability, index) => (
                 <div key={capability.title} className="grid gap-5 border-b border-black/15 py-9 md:grid-cols-[48px_1fr] md:gap-8">
                   <div className="flex items-start gap-3 pt-2">
-                    <span className="h-3 w-3 bg-red-600" aria-hidden="true" />
+                    <span
+                      data-bus-node={`capability-${index}`}
+                      data-bus-position="center"
+                      className="h-3 w-3 shrink-0 bg-red-600"
+                      aria-hidden="true"
+                    />
                     <span className="kodara-mono text-[9px] font-bold text-black/35">0{index + 1}</span>
                   </div>
                   <div>
@@ -353,19 +391,32 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
         </div>
       </section>
 
-      <section id="about" className="border-b border-white/10 px-5 py-24 md:px-10 lg:px-16 lg:py-32">
+      <section id="about" data-bus-section="about" className="border-b border-white/10 px-5 py-24 md:px-10 lg:px-16 lg:py-32">
         <div className="mx-auto grid max-w-[1500px] gap-14 lg:grid-cols-[.72fr_1.28fr] lg:items-start">
-          <div className="relative aspect-[4/5] max-w-xl overflow-hidden bg-white/5">
-            <Image src="/images/sebastien.jpg" alt="Sebastien, founder of Kodara" fill className="object-cover grayscale transition duration-500 hover:grayscale-0" />
-            <div className="kodara-mono absolute bottom-0 left-0 bg-red-600 px-5 py-3 text-[10px] font-black uppercase tracking-[0.18em] text-white">Sebastien / Founder + Product Engineer</div>
+          <div data-bus-node="founder" className="relative aspect-[4/5] max-w-xl overflow-hidden bg-white/5">
+            <Image
+              src="/images/sebastien.jpg"
+              alt="Sebastien, founder of Kodara"
+              fill
+              className="object-cover grayscale transition duration-500 hover:grayscale-0"
+            />
+            <div className="kodara-mono absolute bottom-0 left-0 bg-red-600 px-5 py-3 text-[10px] font-black uppercase tracking-[0.18em] text-white">
+              Sebastien / Founder + Product Engineer
+            </div>
           </div>
 
           <div>
             <div className="kodara-mono text-[10px] font-bold uppercase tracking-[0.28em] text-red-500">Founder-led, on purpose</div>
-            <h2 className="mt-6 max-w-4xl text-5xl font-bold leading-[0.92] tracking-[-0.055em] md:text-7xl">There has to be a better way.</h2>
+            <h2 className="mt-6 max-w-4xl text-5xl font-bold leading-[0.92] tracking-[-0.055em] md:text-7xl">
+              There has to be a better way.
+            </h2>
             <div className="mt-9 max-w-3xl space-y-6 text-lg leading-8 text-white/55">
-              <p>Kodara is founder-led by Sebastien Dolce. The common thread across the work is simple: when a workflow is repetitive, confusing, unnecessarily manual, or held together with copy and paste, it is worth asking whether software should be doing more of the work.</p>
-              <p>That usually leads somewhere between product design, engineering, infrastructure, automation, and a slightly unreasonable amount of curiosity.</p>
+              <p>
+                Kodara is founder-led by Sebastien Dolce. The common thread across the work is simple: when a workflow is repetitive, confusing, unnecessarily manual, or held together with copy and paste, it is worth asking whether software should be doing more of the work.
+              </p>
+              <p>
+                That usually leads somewhere between product design, engineering, infrastructure, automation, and a slightly unreasonable amount of curiosity.
+              </p>
             </div>
             <div className="kodara-mono mt-10 flex flex-wrap gap-x-5 gap-y-3 text-[9px] font-bold uppercase tracking-[0.16em] text-white/38">
               <span>Product thinking</span>
@@ -377,20 +428,36 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
         </div>
       </section>
 
-      <section id="lab" className="relative overflow-hidden border-b border-white/10 px-5 py-24 md:px-10 lg:px-16 lg:py-32">
+      <section id="lab" data-bus-section="lab" className="relative overflow-hidden border-b border-white/10 px-5 py-24 md:px-10 lg:px-16 lg:py-32">
         <div className="mx-auto max-w-[1500px]">
           <div className="grid gap-12 lg:grid-cols-[.55fr_1.45fr]">
             <div>
-              <div className="kodara-mono flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.28em] text-red-500"><Sparkles className="h-4 w-4" /> Kodara Lab</div>
-              <h2 className="mt-7 text-5xl font-bold leading-[0.9] tracking-[-0.055em] md:text-6xl">Where annoying ideas become prototypes.</h2>
-              <p className="mt-7 max-w-md text-lg leading-8 text-white/50">Small experiments, internal tools, prototypes, and things built mostly because the existing way was annoying.</p>
+              <div className="kodara-mono flex items-center gap-3 text-[10px] font-bold uppercase tracking-[0.28em] text-red-500">
+                <Sparkles className="h-4 w-4" /> Kodara Lab
+              </div>
+              <h2 className="mt-7 text-5xl font-bold leading-[0.9] tracking-[-0.055em] md:text-6xl">
+                Where annoying ideas become prototypes.
+              </h2>
+              <p className="mt-7 max-w-md text-lg leading-8 text-white/50">
+                Small experiments, internal tools, prototypes, and things built mostly because the existing way was annoying.
+              </p>
             </div>
 
             <div className="border-t border-white/15">
               {[
-                { n: "01", title: "Review Composer", body: "Can an honest review form require almost no writing and almost no thinking?", state: "TESTING" },
-                { n: "02", title: "Receipt Intelligence", body: "Turn a messy receipt into structured local pricing data without making the user fill out fourteen fields.", state: "BUILDING" },
-              ].map((item) => (
+                {
+                  n: "01",
+                  title: "Review Composer",
+                  body: "Can an honest review form require almost no writing and almost no thinking?",
+                  state: "TESTING",
+                },
+                {
+                  n: "02",
+                  title: "Receipt Intelligence",
+                  body: "Turn a messy receipt into structured local pricing data without making the user fill out fourteen fields.",
+                  state: "BUILDING",
+                },
+              ].map((item, index) => (
                 <div key={item.title} className="grid gap-5 border-b border-white/15 py-9 md:grid-cols-[60px_1fr_auto] md:items-start">
                   <div className="kodara-mono text-[9px] text-white/28">{item.n}</div>
                   <div>
@@ -398,7 +465,13 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
                     <p className="mt-4 max-w-2xl leading-7 text-white/45">{item.body}</p>
                   </div>
                   <div className="kodara-mono flex items-center gap-2 text-[9px] font-bold uppercase tracking-[0.16em] text-red-400">
-                    <span className="h-2 w-2 bg-red-600" /> {item.state}
+                    <span
+                      data-bus-node={`lab-${index}`}
+                      data-bus-position="center"
+                      className="h-2 w-2 bg-red-600"
+                      aria-hidden="true"
+                    />
+                    {item.state}
                   </div>
                 </div>
               ))}
@@ -408,25 +481,33 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
       </section>
 
       {blogPosts.length > 0 && (
-        <section id="notes" className="border-b border-white/10 bg-white/[0.02] px-5 py-24 md:px-10 lg:px-16">
+        <section id="notes" data-bus-section="notes" className="border-b border-white/10 bg-white/[0.02] px-5 py-24 md:px-10 lg:px-16">
           <div className="mx-auto max-w-[1500px]">
             <div className="mb-12 flex flex-wrap items-end justify-between gap-6">
               <div>
                 <div className="kodara-mono text-[10px] font-bold uppercase tracking-[0.28em] text-red-500">Notes from the workshop</div>
                 <h2 className="mt-5 text-5xl font-bold tracking-[-0.05em] md:text-6xl">Things worth writing down.</h2>
               </div>
-              <Link href="/blog" className="kodara-mono text-[9px] font-bold uppercase tracking-[0.2em] text-white/40 hover:text-red-500">All notes →</Link>
+              <Link href="/blog" className="kodara-mono text-[9px] font-bold uppercase tracking-[0.2em] text-white/40 hover:text-red-500">
+                All notes →
+              </Link>
             </div>
 
             <div className="border-t border-white/15">
-              {blogPosts.slice(0, 2).map((post) => (
-                <Link key={post.slug} href={`/blog/${post.slug}`} className="group grid gap-6 border-b border-white/15 py-8 md:grid-cols-[150px_1fr_auto] md:items-start">
+              {blogPosts.slice(0, 2).map((post, index) => (
+                <Link
+                  key={post.slug}
+                  href={`/blog/${post.slug}`}
+                  className="group grid gap-6 border-b border-white/15 py-8 md:grid-cols-[150px_1fr_auto] md:items-start"
+                >
                   <div className="kodara-mono text-[9px] font-bold uppercase tracking-[0.18em] text-white/28">{post.date}</div>
                   <div>
                     <h3 className="text-3xl font-bold tracking-[-0.035em] group-hover:text-red-500">{post.title}</h3>
                     <p className="mt-4 max-w-2xl leading-7 text-white/45">{post.excerpt}</p>
                   </div>
-                  <ArrowUpRight className="h-5 w-5 text-white/25 transition-colors group-hover:text-red-500" />
+                  <span data-bus-node={`note-${index}`} data-bus-position="center" className="inline-flex">
+                    <ArrowUpRight className="h-5 w-5 text-white/25 transition-colors group-hover:text-red-500" />
+                  </span>
                 </Link>
               ))}
             </div>
@@ -434,32 +515,75 @@ const KodaraClient: React.FC<Props> = ({ blogPosts }) => {
         </section>
       )}
 
-      <section id="contact" className="bg-red-600 px-5 py-24 text-white md:px-10 lg:px-16 lg:py-32">
+      <section id="contact" data-bus-section="contact" className="bg-red-600 px-5 py-24 text-white md:px-10 lg:px-16 lg:py-32">
         <div className="mx-auto max-w-[1500px]">
           <div className="grid gap-14 lg:grid-cols-[.75fr_1.25fr]">
             <div>
               <div className="kodara-mono text-[10px] font-bold uppercase tracking-[0.28em] text-white/60">Have a weird problem?</div>
-              <h2 className="mt-5 text-6xl font-bold leading-[0.86] tracking-[-0.065em] md:text-8xl">Good. Those are usually the fun ones.</h2>
-              <p className="mt-8 max-w-xl text-lg leading-8 text-white/75">Tell me what is annoying, broken, manual, expensive, or just stubbornly refusing to become a product.</p>
-              <a href="mailto:team@kodara.dev" className="kodara-mono mt-10 inline-flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.18em]">team@kodara.dev <ArrowUpRight className="h-4 w-4" /></a>
+              <h2 className="mt-5 text-6xl font-bold leading-[0.86] tracking-[-0.065em] md:text-8xl">
+                Good. Those are usually the fun ones.
+              </h2>
+              <p className="mt-8 max-w-xl text-lg leading-8 text-white/75">
+                Tell me what is annoying, broken, manual, expensive, or just stubbornly refusing to become a product.
+              </p>
+              <a href="mailto:team@kodara.dev" className="kodara-mono mt-10 inline-flex items-center gap-3 text-[10px] font-black uppercase tracking-[0.18em]">
+                team@kodara.dev <ArrowUpRight className="h-4 w-4" />
+              </a>
             </div>
 
-            <form name="contact" method="POST" action="/.netlify/functions/send-email" onSubmit={handleSubmit} className="border-t border-white/35">
+            <form
+              data-bus-node="contact"
+              name="contact"
+              method="POST"
+              action="/.netlify/functions/send-email"
+              onSubmit={handleSubmit}
+              className="border-t border-white/35"
+            >
               <input type="hidden" name="g-recaptcha-response" id="g-recaptcha-response" />
               <div className="grid md:grid-cols-2">
-                <input type="text" name="name" placeholder="YOUR NAME" required className="kodara-mono border-b border-white/35 bg-transparent px-0 py-6 text-xs font-bold placeholder:text-white/55 focus:outline-none md:border-r md:px-5" />
-                <input type="email" name="email" placeholder="EMAIL" required className="kodara-mono border-b border-white/35 bg-transparent px-0 py-6 text-xs font-bold placeholder:text-white/55 focus:outline-none md:px-5" />
+                <input
+                  type="text"
+                  name="name"
+                  placeholder="YOUR NAME"
+                  required
+                  className="kodara-mono border-b border-white/35 bg-transparent px-0 py-6 text-xs font-bold placeholder:text-white/55 focus:outline-none md:border-r md:px-5"
+                />
+                <input
+                  type="email"
+                  name="email"
+                  placeholder="EMAIL"
+                  required
+                  className="kodara-mono border-b border-white/35 bg-transparent px-0 py-6 text-xs font-bold placeholder:text-white/55 focus:outline-none md:px-5"
+                />
               </div>
-              <select name="project_type" defaultValue="" required className="kodara-mono w-full border-b border-white/35 bg-red-600 px-0 py-6 text-xs font-bold focus:outline-none md:px-5">
-                <option value="" disabled>WHAT ARE WE BUILDING?</option>
+              <select
+                name="project_type"
+                defaultValue=""
+                required
+                className="kodara-mono w-full border-b border-white/35 bg-red-600 px-0 py-6 text-xs font-bold focus:outline-none md:px-5"
+              >
+                <option value="" disabled>
+                  WHAT ARE WE BUILDING?
+                </option>
                 <option value="Product / MVP">Product / MVP</option>
                 <option value="Automation / AI">Automation / AI</option>
                 <option value="Integration / Infrastructure">Integration / Infrastructure</option>
                 <option value="Consulting / Architecture">Consulting / Architecture</option>
                 <option value="Something weird">Something weird</option>
               </select>
-              <textarea name="message" placeholder="TELL ME WHAT IS ANNOYING YOU" rows={5} required className="kodara-mono w-full resize-none border-b border-white/35 bg-transparent px-0 py-6 text-xs font-bold placeholder:text-white/55 focus:outline-none md:px-5" />
-              <button type="submit" className="kodara-mono mt-8 inline-flex items-center gap-3 bg-black px-7 py-4 text-[10px] font-black uppercase tracking-[0.16em] text-white transition-transform hover:-translate-y-1">Send it <ArrowUpRight className="h-4 w-4" /></button>
+              <textarea
+                name="message"
+                placeholder="TELL ME WHAT IS ANNOYING YOU"
+                rows={5}
+                required
+                className="kodara-mono w-full resize-none border-b border-white/35 bg-transparent px-0 py-6 text-xs font-bold placeholder:text-white/55 focus:outline-none md:px-5"
+              />
+              <button
+                type="submit"
+                className="kodara-mono mt-8 inline-flex items-center gap-3 bg-black px-7 py-4 text-[10px] font-black uppercase tracking-[0.16em] text-white transition-transform hover:-translate-y-1"
+              >
+                Send it <ArrowUpRight className="h-4 w-4" />
+              </button>
             </form>
           </div>
         </div>
