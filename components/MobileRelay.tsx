@@ -19,6 +19,10 @@ type RelayPoint = {
   y: number;
   kind: RelayKind;
   tone: RelayTone;
+  fromX: number;
+  toX: number;
+  lineLeft: number;
+  lineWidth: number;
 };
 
 const relayTargets: RelayDescriptor[] = [
@@ -37,6 +41,7 @@ const relayTargets: RelayDescriptor[] = [
 
 const pointForElement = (element: HTMLElement, descriptor: RelayDescriptor): RelayPoint => {
   const rect = element.getBoundingClientRect();
+  const tone = descriptor.tone ?? "red";
 
   if (descriptor.kind === "terminal") {
     return {
@@ -44,26 +49,40 @@ const pointForElement = (element: HTMLElement, descriptor: RelayDescriptor): Rel
       x: rect.left + rect.width / 2,
       y: window.scrollY + rect.top + rect.height / 2,
       kind: descriptor.kind,
-      tone: descriptor.tone ?? "red",
+      tone,
+      fromX: -52,
+      toX: 0,
+      lineLeft: -52,
+      lineWidth: 52,
     };
   }
 
   if (descriptor.kind === "card") {
+    const travel = Math.max(42, Math.min(72, rect.width * 0.22));
     return {
       id: descriptor.id,
-      x: rect.left + 10,
+      x: rect.left + 1,
       y: window.scrollY + rect.top + 1,
       kind: descriptor.kind,
-      tone: descriptor.tone ?? "red",
+      tone,
+      fromX: 0,
+      toX: travel,
+      lineLeft: 0,
+      lineWidth: travel,
     };
   }
 
+  const travel = Math.max(46, Math.min(68, rect.width * 0.2));
   return {
     id: descriptor.id,
-    x: Math.max(rect.left + 24, rect.right - 18),
+    x: Math.max(rect.left + travel + 18, rect.right - 18),
     y: window.scrollY + rect.top + 1,
     kind: descriptor.kind,
-    tone: descriptor.tone ?? "red",
+    tone,
+    fromX: -travel,
+    toX: 0,
+    lineLeft: -travel,
+    lineWidth: travel,
   };
 };
 
@@ -71,6 +90,7 @@ export default function MobileRelay() {
   const pathname = usePathname();
   const [point, setPoint] = useState<RelayPoint | null>(null);
   const [visible, setVisible] = useState(false);
+  const [traveling, setTraveling] = useState(false);
   const hideTimer = useRef<number | null>(null);
   const lastAnyTrigger = useRef(0);
   const lastTriggerById = useRef(new Map<string, number>());
@@ -87,21 +107,25 @@ export default function MobileRelay() {
 
       const now = Date.now();
       const lastForTarget = lastTriggerById.current.get(descriptor.id) ?? 0;
-      if (now - lastAnyTrigger.current < 1200 || now - lastForTarget < 7000) return;
+      if (now - lastAnyTrigger.current < 1400 || now - lastForTarget < 7000) return;
 
       lastAnyTrigger.current = now;
       lastTriggerById.current.set(descriptor.id, now);
 
       if (hideTimer.current !== null) window.clearTimeout(hideTimer.current);
 
-      setVisible(false);
       setPoint(pointForElement(element, descriptor));
+      setTraveling(false);
+      setVisible(true);
 
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => setVisible(true));
+        requestAnimationFrame(() => setTraveling(true));
       });
 
-      hideTimer.current = window.setTimeout(() => setVisible(false), 760);
+      hideTimer.current = window.setTimeout(() => {
+        setVisible(false);
+        setTraveling(false);
+      }, 1180);
     };
 
     const observer = new IntersectionObserver(
@@ -143,7 +167,10 @@ export default function MobileRelay() {
     });
 
     const handleMediaChange = () => {
-      if (!mobile.matches || reducedMotion.matches) setVisible(false);
+      if (!mobile.matches || reducedMotion.matches) {
+        setVisible(false);
+        setTraveling(false);
+      }
     };
 
     mobile.addEventListener?.("change", handleMediaChange);
@@ -160,6 +187,7 @@ export default function MobileRelay() {
   if (pathname !== "/" || !point) return null;
 
   const color = point.tone === "black" ? "#080808" : "var(--kodara-red)";
+  const packetSize = point.kind === "terminal" ? 12 : 10;
 
   return (
     <div
@@ -172,13 +200,19 @@ export default function MobileRelay() {
         color,
       }}
     >
-      {point.kind === "separator" && (
-        <span className="absolute right-[8px] top-[4px] h-px w-7 bg-current opacity-70" />
-      )}
       <span
-        className={`block bg-current transition-transform duration-200 ${
-          point.kind === "terminal" ? "h-3 w-3" : "h-2.5 w-2.5"
-        } ${visible ? "scale-100" : "scale-75"}`}
+        className="absolute top-[5px] h-px bg-current opacity-60"
+        style={{ left: point.lineLeft, width: point.lineWidth }}
+      />
+
+      <span
+        className="absolute block bg-current"
+        style={{
+          width: packetSize,
+          height: packetSize,
+          transform: `translate3d(${traveling ? point.toX : point.fromX}px, 0, 0)`,
+          transition: "transform 900ms cubic-bezier(0.22, 1, 0.36, 1)",
+        }}
       />
     </div>
   );
