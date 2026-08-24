@@ -3,34 +3,43 @@
 import { usePathname } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
 
-type BusNode = {
-  id: string;
-  y: number;
-  x: number;
-};
+type Point = { x: number; y: number };
+type MeasuredRect = { left: number; right: number; top: number; bottom: number };
+type BusNode = Point & { id: string };
+type BusSection = { id: string; y: number };
 
 type LayoutState = {
+  width: number;
   height: number;
   busX: number;
+  contentRight: number;
+  start: Point;
+  heroCard: MeasuredRect;
   nodes: BusNode[];
+  sections: BusSection[];
 };
 
-const nodeSelectors = [
-  { id: "home", selector: "#home" },
-  { id: "work-1", selector: "#work article:nth-of-type(1)" },
-  { id: "work-2", selector: "#work article:nth-of-type(2)" },
-  { id: "work-3", selector: "#work article:nth-of-type(3)" },
-  { id: "services", selector: "#services" },
-  { id: "about", selector: "#about" },
-  { id: "lab", selector: "#lab" },
-  { id: "notes", selector: "#notes" },
-  { id: "contact", selector: "#contact" },
-];
+const PACKET_INTERVAL_MS = 16000;
+const PACKET_DURATION_SECONDS = 6.5;
+
+const toDocumentRect = (element: HTMLElement): MeasuredRect => {
+  const rect = element.getBoundingClientRect();
+  return {
+    left: rect.left,
+    right: rect.right,
+    top: window.scrollY + rect.top,
+    bottom: window.scrollY + rect.bottom,
+  };
+};
+
+const squarePath = (card: MeasuredRect) =>
+  `M ${card.left} ${card.top} H ${card.right} V ${card.bottom} H ${card.left} V ${card.top}`;
 
 export default function DataBus() {
   const pathname = usePathname();
   const [layout, setLayout] = useState<LayoutState | null>(null);
   const [reducedMotion, setReducedMotion] = useState(false);
+  const [packetRun, setPacketRun] = useState<number | null>(null);
 
   useEffect(() => {
     if (pathname !== "/") return;
@@ -50,29 +59,50 @@ export default function DataBus() {
           return;
         }
 
-        const busX = Math.max(24, Math.min(42, window.innerWidth * 0.025));
-        const nodes = nodeSelectors
-          .map(({ id, selector }) => {
-            const element = document.querySelector<HTMLElement>(selector);
-            if (!element) return null;
+        const startElement = document.querySelector<HTMLElement>("[data-bus-start]");
+        const cardElement = document.querySelector<HTMLElement>("[data-bus-card]");
+        const containerElement = document.querySelector<HTMLElement>("[data-bus-container]");
 
-            const rect = element.getBoundingClientRect();
-            const y = window.scrollY + rect.top + Math.min(96, Math.max(44, rect.height * 0.12));
-            const x = Math.max(busX + 18, rect.left - 12);
-
-            return { id, y, x };
-          })
-          .filter((node): node is BusNode => Boolean(node));
-
-        if (nodes.length < 2) {
+        if (!startElement || !cardElement || !containerElement) {
           setLayout(null);
           return;
         }
 
+        const startRect = startElement.getBoundingClientRect();
+        const card = toDocumentRect(cardElement);
+        const container = containerElement.getBoundingClientRect();
+        const start = {
+          x: startRect.left + startRect.width / 2,
+          y: window.scrollY + startRect.top + startRect.height / 2,
+        };
+
+        const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-bus-section]"))
+          .map((element) => ({
+            id: element.dataset.busSection || element.id,
+            y: window.scrollY + element.getBoundingClientRect().top,
+          }))
+          .filter((section) => Boolean(section.id));
+
+        const nodes = Array.from(document.querySelectorAll<HTMLElement>("[data-bus-node]"))
+          .map((element) => {
+            const rect = element.getBoundingClientRect();
+            return {
+              id: element.dataset.busNode || "node",
+              x: rect.left,
+              y: window.scrollY + rect.top,
+            };
+          })
+          .filter((node) => node.x > start.x + 8);
+
         setLayout({
+          width: window.innerWidth,
           height: document.documentElement.scrollHeight,
-          busX,
+          busX: start.x,
+          contentRight: container.right,
+          start,
+          heroCard: card,
           nodes,
+          sections,
         });
       });
     };
@@ -83,12 +113,11 @@ export default function DataBus() {
     resizeObserver.observe(document.body);
     window.addEventListener("resize", measure);
     window.addEventListener("load", measure);
-
-    const timeout = window.setTimeout(measure, 500);
+    const secondMeasure = window.setTimeout(measure, 600);
 
     return () => {
       cancelAnimationFrame(frame);
-      window.clearTimeout(timeout);
+      window.clearTimeout(secondMeasure);
       resizeObserver.disconnect();
       window.removeEventListener("resize", measure);
       window.removeEventListener("load", measure);
@@ -96,85 +125,137 @@ export default function DataBus() {
     };
   }, [pathname]);
 
-  const geometry = useMemo(() => {
-    if (!layout) return null;
-    const first = layout.nodes[0];
-    const last = layout.nodes[layout.nodes.length - 1];
-    return { firstY: first.y, lastY: last.y };
+  useEffect(() => {
+    if (pathname !== "/" || reducedMotion || !layout) {
+      setPacketRun(null);
+      return;
+    }
+
+    const firstPacket = window.setTimeout(() => setPacketRun(0), 2600);
+    const interval = window.setInterval(
+      () => setPacketRun((run) => (run === null ? 0 : run + 1)),
+      PACKET_INTERVAL_MS
+    );
+
+    return () => {
+      window.clearTimeout(firstPacket);
+      window.clearInterval(interval);
+    };
+  }, [pathname, reducedMotion, Boolean(layout)]);
+
+  const packetTargets = useMemo(() => {
+    if (!layout) return [];
+    return layout.nodes.filter((node) =>
+      /project|capability|founder|lab|note|contact/.test(node.id)
+    );
   }, [layout]);
 
-  if (pathname !== "/" || !layout || !geometry) return null;
+  const packetPath = useMemo(() => {
+    if (!layout || packetRun === null || packetTargets.length === 0) return null;
 
-  const branchPacketNodes = layout.nodes.filter((_, index) => index === 1 || index === 4 || index === 6 || index === 8);
+    const target = packetTargets[packetRun % packetTargets.length];
+    const { start, heroCard, busX } = layout;
+
+    return [
+      `M ${start.x} ${start.y}`,
+      `H ${heroCard.left}`,
+      `V ${heroCard.top}`,
+      `H ${heroCard.right}`,
+      `V ${heroCard.bottom}`,
+      `H ${heroCard.left}`,
+      `H ${busX}`,
+      `V ${target.y}`,
+      `H ${target.x}`,
+    ].join(" ");
+  }, [layout, packetRun, packetTargets]);
+
+  if (pathname !== "/" || !layout) return null;
+
+  const trunkStartY = layout.start.y;
+  const trunkEndY = Math.max(
+    layout.heroCard.bottom,
+    ...layout.sections.map((section) => section.y),
+    ...layout.nodes.map((node) => node.y)
+  );
 
   return (
     <svg
       aria-hidden="true"
-      className="pointer-events-none absolute left-0 top-0 z-20 hidden w-full min-[900px]:block"
-      width="100%"
+      className="pointer-events-none absolute left-0 top-0 z-20 hidden min-[900px]:block"
+      width={layout.width}
       height={layout.height}
-      viewBox={`0 0 ${window.innerWidth} ${layout.height}`}
-      preserveAspectRatio="none"
-      style={{ height: layout.height }}
+      viewBox={`0 0 ${layout.width} ${layout.height}`}
+      style={{ width: "100%", height: layout.height }}
     >
-      <line
-        x1={layout.busX}
-        x2={layout.busX}
-        y1={geometry.firstY}
-        y2={geometry.lastY}
-        stroke="var(--kodara-red)"
-        strokeWidth="1"
-        opacity="0.72"
-      />
+      <g fill="none" stroke="var(--kodara-red)" strokeWidth="1.15" strokeLinecap="square">
+        <path
+          d={`M ${layout.busX} ${trunkStartY} V ${trunkEndY}`}
+          opacity="0.62"
+        />
 
-      {layout.nodes.map((node) => (
-        <g key={node.id}>
-          <line
-            x1={layout.busX}
-            x2={node.x}
-            y1={node.y}
-            y2={node.y}
-            stroke="var(--kodara-red)"
-            strokeWidth="1"
-            opacity="0.58"
+        <path
+          d={`M ${layout.start.x} ${layout.start.y} H ${layout.heroCard.left} V ${layout.heroCard.top}`}
+          opacity="0.78"
+        />
+        <path d={squarePath(layout.heroCard)} opacity="0.84" />
+        <path
+          d={`M ${layout.heroCard.left} ${layout.heroCard.bottom} H ${layout.busX}`}
+          opacity="0.78"
+        />
+
+        {layout.sections.map((section) => (
+          <path
+            key={`section-${section.id}`}
+            d={`M ${layout.busX} ${section.y} H ${layout.contentRight}`}
+            opacity="0.46"
           />
-          <rect x={layout.busX - 3} y={node.y - 3} width="6" height="6" fill="var(--kodara-red)" />
-          <rect x={node.x - 4} y={node.y - 4} width="8" height="8" fill="var(--kodara-red)" />
-        </g>
-      ))}
+        ))}
 
-      {!reducedMotion && (
-        <>
-          <rect x={layout.busX - 4} y={geometry.firstY - 4} width="8" height="8" fill="var(--kodara-red)">
-            <animate
-              attributeName="y"
-              values={`${geometry.firstY - 4};${geometry.lastY - 4};${geometry.firstY - 4}`}
-              dur="18s"
-              repeatCount="indefinite"
+        {layout.nodes.map((node) => (
+          <path
+            key={`branch-${node.id}`}
+            d={`M ${layout.busX} ${node.y} H ${node.x}`}
+            opacity="0.42"
+          />
+        ))}
+      </g>
+
+      <g fill="var(--kodara-red)">
+        <rect x={layout.start.x - 5} y={layout.start.y - 5} width="10" height="10" />
+        <rect x={layout.heroCard.left - 4} y={layout.heroCard.top - 4} width="8" height="8" />
+
+        {layout.sections.map((section) => (
+          <rect
+            key={`junction-${section.id}`}
+            x={layout.busX - 3.5}
+            y={section.y - 3.5}
+            width="7"
+            height="7"
+          />
+        ))}
+
+        {layout.nodes.map((node) => (
+          <rect
+            key={`node-${node.id}`}
+            x={node.x - 4}
+            y={node.y - 4}
+            width="8"
+            height="8"
+          />
+        ))}
+
+        {!reducedMotion && packetPath && packetRun !== null && (
+          <rect key={`packet-${packetRun}`} x="-5" y="-5" width="10" height="10">
+            <animateMotion
+              path={packetPath}
+              dur={`${PACKET_DURATION_SECONDS}s`}
+              begin="0s"
+              fill="remove"
+              calcMode="linear"
             />
           </rect>
-          <rect x={layout.busX - 3} y={geometry.lastY - 3} width="6" height="6" fill="var(--kodara-red)" opacity="0.65">
-            <animate
-              attributeName="y"
-              values={`${geometry.lastY - 3};${geometry.firstY - 3};${geometry.lastY - 3}`}
-              dur="24s"
-              repeatCount="indefinite"
-            />
-          </rect>
-
-          {branchPacketNodes.map((node, index) => (
-            <rect key={`packet-${node.id}`} x={layout.busX - 3} y={node.y - 3} width="6" height="6" fill="var(--kodara-red)">
-              <animate
-                attributeName="x"
-                values={`${layout.busX - 3};${node.x - 3};${layout.busX - 3}`}
-                dur={`${5.5 + index * 0.8}s`}
-                begin={`${index * 1.4}s`}
-                repeatCount="indefinite"
-              />
-            </rect>
-          ))}
-        </>
-      )}
+        )}
+      </g>
     </svg>
   );
 }
