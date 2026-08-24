@@ -249,10 +249,15 @@ export default function DataBus() {
     .filter((section) => section.y > lastProjectBottom(layout.projects, layout.workTop))
     .sort((a, b) => a.y - b.y);
 
-  const regularNodes = layout.nodes.filter((node) => !node.id.startsWith("lab-"));
+  const regularNodes = layout.nodes.filter(
+    (node) => !node.id.startsWith("lab-") && !node.id.startsWith("note-")
+  );
   const labNodes = layout.nodes.filter((node) => node.id.startsWith("lab-")).sort((a, b) => a.y - b.y);
+  const noteNodes = layout.nodes.filter((node) => node.id.startsWith("note-")).sort((a, b) => a.y - b.y);
   const labSection = lowerSections.find((section) => section.id === "lab");
+  const noteSection = lowerSections.find((section) => section.id === "notes");
   const labBusX = labNodes.length > 0 ? Math.max(layout.contentLeft + 8, Math.min(...labNodes.map((node) => node.x)) - 28) : null;
+  const noteBusX = noteNodes.length > 0 ? Math.max(layout.contentLeft + 8, Math.min(...noteNodes.map((node) => node.x)) - 28) : null;
   const firstProjectCardLeft = layout.projects[0]?.card.left ?? layout.contentRight;
 
   return (
@@ -300,6 +305,15 @@ export default function DataBus() {
             ))}
           </g>
         )}
+
+        {noteSection && noteBusX !== null && noteNodes.length > 0 && (
+          <g>
+            <path d={`M ${noteBusX} ${noteSection.y} V ${noteNodes[noteNodes.length - 1].y}`} opacity="0.42" />
+            {noteNodes.map((node) => (
+              <path key={`note-tap-${node.id}`} d={`M ${noteBusX} ${node.y} H ${node.x}`} opacity="0.5" />
+            ))}
+          </g>
+        )}
       </g>
 
       <g fill="var(--kodara-red)">
@@ -325,6 +339,10 @@ export default function DataBus() {
 
         {labSection && labBusX !== null && (
           <rect x={labBusX - 3} y={labSection.y - 3} width="6" height="6" />
+        )}
+
+        {noteSection && noteBusX !== null && (
+          <rect x={noteBusX - 3} y={noteSection.y - 3} width="6" height="6" />
         )}
 
         {!reducedMotion && packetRun !== null && (
