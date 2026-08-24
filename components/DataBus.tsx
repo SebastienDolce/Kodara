@@ -21,6 +21,7 @@ type LayoutState = {
   projects: ProjectRoute[];
   nodes: BusNode[];
   sections: BusSection[];
+  contact: MeasuredRect | null;
   footerEnd: Point | null;
 };
 
@@ -79,6 +80,7 @@ export default function DataBus() {
         const workElement = document.querySelector<HTMLElement>("#work");
         const workHeadingElement = document.querySelector<HTMLElement>("[data-bus-work-heading]");
         const workContainerElement = document.querySelector<HTMLElement>("[data-bus-work-container]");
+        const contactElement = document.querySelector<HTMLElement>("#contact");
         const footerEndElement = document.querySelector<HTMLElement>("[data-bus-end]");
 
         if (!heroCopyElement || !heroTitleElement || !heroCardElement || !workElement || !workHeadingElement || !workContainerElement) {
@@ -136,6 +138,8 @@ export default function DataBus() {
           })
           .filter((node) => !node.id.startsWith("project-") && node.id !== "contact");
 
+        const contact = contactElement ? toDocumentRect(contactElement) : null;
+
         const footerEnd = footerEndElement
           ? (() => {
               const rect = footerEndElement.getBoundingClientRect();
@@ -158,6 +162,7 @@ export default function DataBus() {
           projects,
           nodes,
           sections,
+          contact,
           footerEnd,
         });
       });
@@ -257,6 +262,9 @@ export default function DataBus() {
   const labSection = lowerSections.find((section) => section.id === "lab");
   const labBusX = labNodes.length > 0 ? Math.max(layout.contentLeft + 8, Math.min(...labNodes.map((node) => node.x)) - 28) : null;
   const firstProjectCardLeft = layout.projects[0]?.card.left ?? layout.contentRight;
+  const contactClipId = "kodara-contact-bus-clip";
+  const busLinesId = "kodara-bus-lines";
+  const busNodesId = "kodara-bus-nodes";
 
   return (
     <svg
@@ -267,89 +275,114 @@ export default function DataBus() {
       viewBox={`0 0 ${layout.width} ${layout.height}`}
       style={{ width: "100%", height: layout.height }}
     >
-      <g fill="none" stroke="var(--kodara-red)" strokeWidth="1.15" strokeLinecap="square">
-        <path d={mainPath} opacity="0.76" />
-        <path d={cardPath(layout.heroCard)} opacity="0.9" />
+      <defs>
+        <g id={busLinesId} fill="none" strokeWidth="1.15" strokeLinecap="square">
+          <path d={mainPath} opacity="0.76" />
+          <path d={cardPath(layout.heroCard)} opacity="0.9" />
 
-        <path d={`M ${layout.routeX} ${layout.workTop} H ${firstProjectCardLeft}`} opacity="0.56" />
+          <path d={`M ${layout.routeX} ${layout.workTop} H ${firstProjectCardLeft}`} opacity="0.56" />
 
-        {layout.projects.map((project) => (
-          <g key={`project-${project.id}`}>
-            <path d={`M ${layout.routeX} ${project.rowTop} H ${project.card.left}`} opacity="0.48" />
-            <path d={`M ${layout.routeX} ${project.rowBottom} H ${project.card.left}`} opacity="0.48" />
-            <path d={cardPath(project.card)} opacity="0.84" />
-          </g>
-        ))}
+          {layout.projects.map((project) => (
+            <g key={`project-${project.id}`}>
+              <path d={`M ${layout.routeX} ${project.rowTop} H ${project.card.left}`} opacity="0.48" />
+              <path d={`M ${layout.routeX} ${project.rowBottom} H ${project.card.left}`} opacity="0.48" />
+              <path d={cardPath(project.card)} opacity="0.84" />
+            </g>
+          ))}
 
-        {lowerSections.map((section) => (
-          <path
-            key={`section-${section.id}`}
-            d={`M ${layout.contentLeft} ${section.y} H ${layout.contentRight}`}
-            opacity="0.46"
-          />
-        ))}
+          {lowerSections.map((section) => (
+            <path
+              key={`section-${section.id}`}
+              d={`M ${layout.contentLeft} ${section.y} H ${layout.contentRight}`}
+              opacity="0.46"
+            />
+          ))}
 
-        {regularNodes.map((node) => {
-          const section = parentSectionFor(node, lowerSections);
-          if (!section || node.y <= section.y) return null;
-          return <path key={`branch-${node.id}`} d={`M ${node.x} ${section.y} V ${node.y}`} opacity="0.36" />;
-        })}
+          {regularNodes.map((node) => {
+            const section = parentSectionFor(node, lowerSections);
+            if (!section || node.y <= section.y) return null;
+            return <path key={`branch-${node.id}`} d={`M ${node.x} ${section.y} V ${node.y}`} opacity="0.36" />;
+          })}
 
-        {labSection && labBusX !== null && labNodes.length > 0 && (
-          <g>
-            <path d={`M ${labBusX} ${labSection.y} V ${labNodes[labNodes.length - 1].y}`} opacity="0.42" />
-            {labNodes.map((node) => (
-              <path key={`lab-tap-${node.id}`} d={`M ${labBusX} ${node.y} H ${node.x}`} opacity="0.5" />
-            ))}
-          </g>
+          {labSection && labBusX !== null && labNodes.length > 0 && (
+            <g>
+              <path d={`M ${labBusX} ${labSection.y} V ${labNodes[labNodes.length - 1].y}`} opacity="0.42" />
+              {labNodes.map((node) => (
+                <path key={`lab-tap-${node.id}`} d={`M ${labBusX} ${node.y} H ${node.x}`} opacity="0.5" />
+              ))}
+            </g>
+          )}
+
+          {noteNodes.map((node) => (
+            <path
+              key={`note-tap-${node.id}`}
+              d={`M ${layout.contentRight} ${node.y} H ${node.x}`}
+              opacity="0.5"
+            />
+          ))}
+        </g>
+
+        <g id={busNodesId}>
+          <rect x={layout.start.x - 4} y={layout.start.y - 4} width="8" height="8" />
+          <rect x={layout.routeX - 3.5} y={layout.workTop - 3.5} width="7" height="7" />
+
+          {layout.projects.map((project) => (
+            <Fragment key={`junctions-${project.id}`}>
+              <rect x={layout.routeX - 3} y={project.rowTop - 3} width="6" height="6" />
+              <rect x={layout.routeX - 3} y={project.rowBottom - 3} width="6" height="6" />
+            </Fragment>
+          ))}
+
+          {lowerSections.map((section) => (
+            <rect
+              key={`junction-${section.id}`}
+              x={layout.contentRight - 3.5}
+              y={section.y - 3.5}
+              width="7"
+              height="7"
+            />
+          ))}
+
+          {labSection && labBusX !== null && (
+            <rect x={labBusX - 3} y={labSection.y - 3} width="6" height="6" />
+          )}
+
+          {noteNodes.map((node) => (
+            <rect
+              key={`note-junction-${node.id}`}
+              x={layout.contentRight - 3}
+              y={node.y - 3}
+              width="6"
+              height="6"
+            />
+          ))}
+        </g>
+
+        {layout.contact && (
+          <clipPath id={contactClipId}>
+            <rect
+              x="0"
+              y={layout.contact.top}
+              width={layout.width}
+              height={Math.max(0, layout.contact.bottom - layout.contact.top)}
+            />
+          </clipPath>
         )}
+      </defs>
 
-        {noteNodes.map((node) => (
-          <path
-            key={`note-tap-${node.id}`}
-            d={`M ${layout.contentRight} ${node.y} H ${node.x}`}
-            opacity="0.5"
-          />
-        ))}
-      </g>
+      <use href={`#${busLinesId}`} stroke="var(--kodara-red)" />
+      <use href={`#${busNodesId}`} fill="var(--kodara-red)" />
 
-      <g fill="var(--kodara-red)">
-        <rect x={layout.start.x - 4} y={layout.start.y - 4} width="8" height="8" />
-        <rect x={layout.routeX - 3.5} y={layout.workTop - 3.5} width="7" height="7" />
+      {layout.contact && (
+        <>
+          <use href={`#${busLinesId}`} stroke="#080808" clipPath={`url(#${contactClipId})`} />
+          <use href={`#${busNodesId}`} fill="#080808" clipPath={`url(#${contactClipId})`} />
+        </>
+      )}
 
-        {layout.projects.map((project) => (
-          <Fragment key={`junctions-${project.id}`}>
-            <rect x={layout.routeX - 3} y={project.rowTop - 3} width="6" height="6" />
-            <rect x={layout.routeX - 3} y={project.rowBottom - 3} width="6" height="6" />
-          </Fragment>
-        ))}
-
-        {lowerSections.map((section) => (
-          <rect
-            key={`junction-${section.id}`}
-            x={layout.contentRight - 3.5}
-            y={section.y - 3.5}
-            width="7"
-            height="7"
-          />
-        ))}
-
-        {labSection && labBusX !== null && (
-          <rect x={labBusX - 3} y={labSection.y - 3} width="6" height="6" />
-        )}
-
-        {noteNodes.map((node) => (
-          <rect
-            key={`note-junction-${node.id}`}
-            x={layout.contentRight - 3}
-            y={node.y - 3}
-            width="6"
-            height="6"
-          />
-        ))}
-
-        {!reducedMotion && packetRun !== null && (
-          <rect key={`packet-${packetRun}`} x="-5" y="-5" width="10" height="10">
+      {!reducedMotion && packetRun !== null && (
+        <>
+          <rect key={`packet-red-${packetRun}`} x="-5" y="-5" width="10" height="10" fill="var(--kodara-red)">
             <animateMotion
               path={mainPath}
               dur={`${PACKET_DURATION_SECONDS}s`}
@@ -358,8 +391,28 @@ export default function DataBus() {
               calcMode="linear"
             />
           </rect>
-        )}
-      </g>
+
+          {layout.contact && (
+            <rect
+              key={`packet-black-${packetRun}`}
+              x="-5"
+              y="-5"
+              width="10"
+              height="10"
+              fill="#080808"
+              clipPath={`url(#${contactClipId})`}
+            >
+              <animateMotion
+                path={mainPath}
+                dur={`${PACKET_DURATION_SECONDS}s`}
+                begin="0s"
+                fill="remove"
+                calcMode="linear"
+              />
+            </rect>
+          )}
+        </>
+      )}
     </svg>
   );
 }
