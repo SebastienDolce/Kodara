@@ -97,6 +97,8 @@ select:focus {
     linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
     linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
   background-size: 22px 22px;
+  animation: kodara-grid-drift 24s linear infinite;
+  transition: border-color 320ms ease, box-shadow 320ms ease;
 }
 
 .kodara-block {
@@ -185,6 +187,11 @@ select:focus {
   width: 100%;
 }
 
+#work article:hover .kodara-grid-tight {
+  border-color: rgba(225, 17, 28, 0.35);
+  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
+}
+
 #services,
 #about,
 #lab,
@@ -207,6 +214,15 @@ select:focus {
   background: var(--kodara-red);
 }
 
+@supports (animation-timeline: view()) {
+  main section[id]:not(#home) > .mx-auto,
+  main section[id]:not(#home) > .relative.mx-auto {
+    animation: kodara-section-enter linear both;
+    animation-timeline: view();
+    animation-range: entry 0% entry 24%;
+  }
+}
+
 @keyframes kodara-scan {
   0% { transform: translateY(0); opacity: 0; }
   8% { opacity: 1; }
@@ -217,6 +233,24 @@ select:focus {
 @keyframes kodara-pulse {
   0%, 100% { opacity: 0.2; transform: translateY(-50%) scaleX(0.45); }
   50% { opacity: 1; transform: translateY(-50%) scaleX(1); }
+}
+
+@keyframes kodara-grid-drift {
+  from { background-position: 0 0, 0 0; }
+  to { background-position: 22px 22px, 22px 22px; }
+}
+
+@keyframes kodara-section-enter {
+  from {
+    opacity: 0.34;
+    transform: translateY(34px) scale(0.992);
+    filter: saturate(0.7);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+    filter: saturate(1);
+  }
 }
 
 ::selection {
