@@ -43,6 +43,25 @@ export default function WorkshopRail() {
     return () => observers.forEach((observer) => observer.disconnect());
   }, [pathname]);
 
+  useEffect(() => {
+    if (pathname !== "/") return;
+
+    let frame = 0;
+    const handlePointerMove = (event: PointerEvent) => {
+      cancelAnimationFrame(frame);
+      frame = requestAnimationFrame(() => {
+        document.documentElement.style.setProperty("--kodara-pointer-x", `${event.clientX}px`);
+        document.documentElement.style.setProperty("--kodara-pointer-y", `${event.clientY}px`);
+      });
+    };
+
+    window.addEventListener("pointermove", handlePointerMove, { passive: true });
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("pointermove", handlePointerMove);
+    };
+  }, [pathname]);
+
   if (pathname !== "/") return null;
 
   const activeSection = sections.find((section) => section.id === active) ?? sections[0];
@@ -53,6 +72,8 @@ export default function WorkshopRail() {
 
   return (
     <>
+      <div className="kodara-pointer-field pointer-events-none fixed inset-0 z-20 hidden min-[680px]:block" aria-hidden="true" />
+
       <aside
         aria-label="Page position"
         className="pointer-events-none fixed right-2 top-1/2 z-40 hidden -translate-y-1/2 min-[680px]:flex xl:right-5"
