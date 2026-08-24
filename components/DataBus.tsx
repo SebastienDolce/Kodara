@@ -7,20 +7,24 @@ type Point = { x: number; y: number };
 type MeasuredRect = { left: number; right: number; top: number; bottom: number };
 type BusNode = Point & { id: string };
 type BusSection = { id: string; y: number };
+type ProjectRoute = { id: string; rowTop: number; rowBottom: number; card: MeasuredRect };
 
 type LayoutState = {
   width: number;
   height: number;
-  busX: number;
+  contentLeft: number;
   contentRight: number;
+  routeX: number;
   start: Point;
   heroCard: MeasuredRect;
+  workTop: number;
+  projects: ProjectRoute[];
   nodes: BusNode[];
   sections: BusSection[];
 };
 
 const PACKET_INTERVAL_MS = 16000;
-const PACKET_DURATION_SECONDS = 6.5;
+const PACKET_DURATION_SECONDS = 9;
 
 const toDocumentRect = (element: HTMLElement): MeasuredRect => {
   const rect = element.getBoundingClientRect();
@@ -65,29 +69,53 @@ export default function DataBus() {
           return;
         }
 
-        const startElement = document.querySelector<HTMLElement>("[data-bus-start]");
-        const cardElement = document.querySelector<HTMLElement>("[data-bus-card]");
-        const containerElement = document.querySelector<HTMLElement>("[data-bus-container]");
+        const heroCopyElement = document.querySelector<HTMLElement>("[data-bus-hero-copy]");
+        const heroCardElement = document.querySelector<HTMLElement>("[data-bus-card]");
+        const workElement = document.querySelector<HTMLElement>("#work");
+        const workHeadingElement = document.querySelector<HTMLElement>("[data-bus-work-heading]");
+        const workContainerElement = document.querySelector<HTMLElement>("[data-bus-work-container]");
 
-        if (!startElement || !cardElement || !containerElement) {
+        if (!heroCopyElement || !heroCardElement || !workElement || !workHeadingElement || !workContainerElement) {
           setLayout(null);
           return;
         }
 
-        const startRect = startElement.getBoundingClientRect();
-        const card = toDocumentRect(cardElement);
-        const container = containerElement.getBoundingClientRect();
+        const heroCopy = toDocumentRect(heroCopyElement);
+        const heroCard = toDocumentRect(heroCardElement);
+        const work = toDocumentRect(workElement);
+        const workHeading = toDocumentRect(workHeadingElement);
+        const workContainer = toDocumentRect(workContainerElement);
+        const gapWidth = Math.max(24, heroCard.left - heroCopy.right);
+
         const start = {
-          x: startRect.left + startRect.width / 2,
-          y: window.scrollY + startRect.top + startRect.height / 2,
+          x: heroCopy.right + gapWidth * 0.5,
+          y: Math.max(heroCopy.top + 70, heroCard.top - 46),
         };
+
+        const routeX = Math.max(18, workHeading.left - 20);
+
+        const projects = Array.from(document.querySelectorAll<HTMLElement>("[data-bus-project-row]"))
+          .map((row) => {
+            const id = row.dataset.busProjectRow;
+            if (!id) return null;
+            const card = document.querySelector<HTMLElement>(`[data-bus-project-card="${id}"]`);
+            if (!card) return null;
+            const rowRect = toDocumentRect(row);
+            return {
+              id,
+              rowTop: rowRect.top,
+              rowBottom: rowRect.bottom,
+              card: toDocumentRect(card),
+            };
+          })
+          .filter((project): project is ProjectRoute => Boolean(project));
 
         const sections = Array.from(document.querySelectorAll<HTMLElement>("[data-bus-section]"))
           .map((element) => ({
             id: element.dataset.busSection || element.id,
             y: window.scrollY + element.getBoundingClientRect().top,
           }))
-          .filter((section) => Boolean(section.id));
+          .filter((section) => Boolean(section.id) && section.id !== "work");
 
         const nodes = Array.from(document.querySelectorAll<HTMLElement>("[data-bus-node]"))
           .map((element) => {
@@ -99,15 +127,18 @@ export default function DataBus() {
               y: window.scrollY + (centered ? rect.top + rect.height / 2 : rect.top),
             };
           })
-          .filter((node) => node.x > start.x + 8);
+          .filter((node) => !node.id.startsWith("project-") && node.id !== "contact");
 
         setLayout({
           width: window.innerWidth,
           height: document.documentElement.scrollHeight,
-          busX: start.x,
-          contentRight: container.right,
+          contentLeft: workContainer.left,
+          contentRight: workContainer.right,
+          routeX,
           start,
-          heroCard: card,
+          heroCard,
+          workTop: work.top,
+          projects,
           nodes,
           sections,
         });
@@ -138,7 +169,7 @@ export default function DataBus() {
       return;
     }
 
-    const firstPacket = window.setTimeout(() => setPacketRun(0), 2600);
+    const firstPacket = window.setTimeout(() => setPacketRun(0), 3200);
     const interval = window.setInterval(
       () => setPacketRun((run) => (run === null ? 0 : run + 1)),
       PACKET_INTERVAL_MS
@@ -150,41 +181,51 @@ export default function DataBus() {
     };
   }, [pathname, reducedMotion, hasLayout]);
 
-  const packetTargets = useMemo(() => {
-    if (!layout) return [];
-    return layout.nodes.filter((node) => /project|capability|founder|lab|note/.test(node.id));
-  }, [layout]);
+  const mainPath = useMemo(() => {
+    if (!layout) return null;
 
-  const packetPath = useMemo(() => {
-    if (!layout || packetRun === null || packetTargets.length === 0) return null;
-
-    const target = packetTargets[packetRun % packetTargets.length];
-    const section = parentSectionFor(target, layout.sections);
-    const { start, heroCard, busX } = layout;
-    const targetSectionY = section?.y ?? target.y;
-
-    return [
+    const { start, heroCard, workTop, routeX, projects, sections, contentRight } = layout;
+    const parts = [
       `M ${start.x} ${start.y}`,
-      `H ${heroCard.left}`,
       `V ${heroCard.top}`,
+      `H ${heroCard.left}`,
       `H ${heroCard.right}`,
       `V ${heroCard.bottom}`,
       `H ${heroCard.left}`,
-      `H ${busX}`,
-      `V ${targetSectionY}`,
-      `H ${target.x}`,
-      `V ${target.y}`,
-    ].join(" ");
-  }, [layout, packetRun, packetTargets]);
+      `V ${workTop}`,
+      `H ${routeX}`,
+    ];
 
-  if (pathname !== "/" || !layout) return null;
+    projects.forEach((project) => {
+      parts.push(
+        `V ${project.rowTop}`,
+        `H ${project.card.left}`,
+        `V ${project.card.top}`,
+        `H ${project.card.right}`,
+        `V ${project.card.bottom}`,
+        `H ${project.card.left}`,
+        `V ${project.rowBottom}`,
+        `H ${routeX}`
+      );
+    });
 
-  const trunkStartY = layout.start.y;
-  const trunkEndY = Math.max(
-    layout.heroCard.bottom,
-    ...layout.sections.map((section) => section.y),
-    ...layout.nodes.map((node) => node.y)
-  );
+    const lowerSections = sections
+      .filter((section) => section.y > (projects.at(-1)?.rowBottom ?? workTop))
+      .sort((a, b) => a.y - b.y);
+
+    if (lowerSections.length > 0) {
+      parts.push(`V ${lowerSections[0].y}`, `H ${contentRight}`);
+      lowerSections.slice(1).forEach((section) => parts.push(`V ${section.y}`));
+    }
+
+    return parts.join(" ");
+  }, [layout]);
+
+  if (pathname !== "/" || !layout || !mainPath) return null;
+
+  const lowerSections = layout.sections
+    .filter((section) => section.y > (layout.projects.at(-1)?.rowBottom ?? layout.workTop))
+    .sort((a, b) => a.y - b.y);
 
   return (
     <svg
@@ -196,70 +237,69 @@ export default function DataBus() {
       style={{ width: "100%", height: layout.height }}
     >
       <g fill="none" stroke="var(--kodara-red)" strokeWidth="1.15" strokeLinecap="square">
-        <path d={`M ${layout.busX} ${trunkStartY} V ${trunkEndY}`} opacity="0.62" />
+        <path d={mainPath} opacity="0.76" />
+        <path d={cardPath(layout.heroCard)} opacity="0.9" />
 
         <path
-          d={`M ${layout.start.x} ${layout.start.y} H ${layout.heroCard.left} V ${layout.heroCard.top}`}
-          opacity="0.78"
-        />
-        <path d={cardPath(layout.heroCard)} opacity="0.86" />
-        <path
-          d={`M ${layout.heroCard.left} ${layout.heroCard.bottom} H ${layout.busX}`}
-          opacity="0.78"
+          d={`M ${layout.routeX} ${layout.workTop} H ${layout.contentRight}`}
+          opacity="0.56"
         />
 
-        {layout.sections.map((section) => (
+        {layout.projects.map((project) => (
+          <g key={`project-${project.id}`}>
+            <path d={`M ${layout.routeX} ${project.rowTop} H ${layout.contentRight}`} opacity="0.48" />
+            <path d={`M ${layout.routeX} ${project.rowBottom} H ${layout.contentRight}`} opacity="0.48" />
+            <path d={cardPath(project.card)} opacity="0.84" />
+          </g>
+        ))}
+
+        {lowerSections.map((section) => (
           <path
             key={`section-${section.id}`}
-            d={`M ${layout.busX} ${section.y} H ${layout.contentRight}`}
-            opacity="0.5"
+            d={`M ${layout.contentLeft} ${section.y} H ${layout.contentRight}`}
+            opacity="0.46"
           />
         ))}
 
         {layout.nodes.map((node) => {
-          const section = parentSectionFor(node, layout.sections);
-          if (!section) return null;
+          const section = parentSectionFor(node, lowerSections);
+          if (!section || node.y <= section.y) return null;
           return (
             <path
               key={`branch-${node.id}`}
               d={`M ${node.x} ${section.y} V ${node.y}`}
-              opacity="0.42"
+              opacity="0.36"
             />
           );
         })}
       </g>
 
       <g fill="var(--kodara-red)">
-        <rect x={layout.heroCard.left - 4} y={layout.heroCard.top - 4} width="8" height="8" />
+        <rect x={layout.start.x - 4} y={layout.start.y - 4} width="8" height="8" />
 
-        {layout.sections.map((section) => (
+        <rect x={layout.routeX - 3.5} y={layout.workTop - 3.5} width="7" height="7" />
+
+        {layout.projects.map((project) => (
+          <React.Fragment key={`junctions-${project.id}`}>
+            <rect x={layout.routeX - 3} y={project.rowTop - 3} width="6" height="6" />
+            <rect x={layout.routeX - 3} y={project.rowBottom - 3} width="6" height="6" />
+          </React.Fragment>
+        ))}
+
+        {lowerSections.map((section) => (
           <rect
             key={`junction-${section.id}`}
-            x={layout.busX - 3.5}
+            x={layout.contentRight - 3.5}
             y={section.y - 3.5}
             width="7"
             height="7"
           />
         ))}
 
-        {layout.nodes.map((node) => {
-          const section = parentSectionFor(node, layout.sections);
-          if (!section) return null;
-          return (
-            <rect
-              key={`drop-${node.id}`}
-              x={node.x - 3}
-              y={section.y - 3}
-              width="6"
-              height="6"
-            />
-          );
-        })}
-
-        {!reducedMotion && packetPath && packetRun !== null && (
+        {!reducedMotion && packetRun !== null && (
           <rect key={`packet-${packetRun}`} x="-5" y="-5" width="10" height="10">
             <animateMotion
-              path={packetPath}
+              path={mainPath}
               dur={`${PACKET_DURATION_SECONDS}s`}
               begin="0s"
               fill="remove"
