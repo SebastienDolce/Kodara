@@ -1,21 +1,50 @@
-// app/layout.tsx
-import "./globals.css"; // Your styles
+import "./globals.css";
 import type { Metadata } from "next";
 import { ReactNode } from "react";
-import Menu from "@/components/Menu"; // Update path if needed
-import Footer from "@/components/Footer"; // Update path if needed
+import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
+import Menu from "@/components/Menu";
+import Footer from "@/components/Footer";
+import DataBus from "@/components/DataBus";
+import MobileRelay from "@/components/MobileRelay";
+
+const display = Space_Grotesk({
+  subsets: ["latin"],
+  variable: "--font-kodara-display",
+  display: "swap",
+});
+
+const mono = IBM_Plex_Mono({
+  subsets: ["latin"],
+  weight: ["400", "500", "600", "700"],
+  variable: "--font-kodara-mono",
+  display: "swap",
+});
 
 export const metadata: Metadata = {
-  title: "Kodara",
-  description: "Software made simple. Business made better."
+  metadataBase: new URL("https://kodara.dev"),
+  title: {
+    default: "Kodara — Product Systems Studio",
+    template: "%s — Kodara",
+  },
+  description:
+    "Kodara is a founder-led product systems studio building software, AI automation, integrations, and infrastructure for ambitious ideas and messy workflows.",
+  openGraph: {
+    title: "Kodara — Product Systems Studio",
+    description: "Build the thing. Connect the things. Automate the rest.",
+    url: "https://kodara.dev",
+    siteName: "Kodara",
+    type: "website",
+  },
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en">
-      <body className="bg-black font-mono">
+    <html lang="en" className={`${display.variable} ${mono.variable}`}>
+      <body className="relative bg-[#080808] text-[#f3f0ea] antialiased">
         <Menu />
-        <main>{children}</main>
+        <DataBus />
+        <MobileRelay />
+        <main className="relative z-10">{children}</main>
         <Footer />
       </body>
     </html>

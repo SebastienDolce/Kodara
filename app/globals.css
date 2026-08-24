@@ -1,26 +1,118 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #080808;
+  --foreground: #f3f0ea;
+  --kodara-paper: #f2efe8;
+  --kodara-red: #e1111c;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-sans: var(--font-kodara-display), Arial, Helvetica, sans-serif;
+  --font-mono: var(--font-kodara-mono), "SFMono-Regular", Consolas, "Liberation Mono", monospace;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+* {
+  box-sizing: border-box;
+}
+
+html {
+  scroll-behavior: smooth;
+  background: var(--background);
+  scrollbar-color: #6b1118 #111;
+  scrollbar-width: thin;
 }
 
 body {
+  margin: 0;
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-kodara-display), Arial, Helvetica, sans-serif;
+  text-rendering: optimizeLegibility;
+}
+
+section[id] {
+  scroll-margin-top: 76px;
+}
+
+::-webkit-scrollbar {
+  width: 7px;
+}
+
+::-webkit-scrollbar-track {
+  background: #111;
+}
+
+::-webkit-scrollbar-thumb {
+  background: #5c151a;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--kodara-red);
+}
+
+a,
+button,
+input,
+textarea,
+select {
+  transition-property: color, background-color, border-color, opacity, transform, box-shadow;
+  transition-duration: 180ms;
+  transition-timing-function: ease;
+}
+
+button,
+a,
+select {
+  -webkit-tap-highlight-color: transparent;
+}
+
+:focus-visible {
+  outline: 2px solid var(--kodara-red);
+  outline-offset: 4px;
+}
+
+input:focus,
+textarea:focus,
+select:focus {
+  box-shadow: inset 3px 0 0 rgba(255, 255, 255, 0.82);
+}
+
+.kodara-mono {
+  font-family: var(--font-kodara-mono), "SFMono-Regular", Consolas, monospace;
+}
+
+.kodara-grid {
+  background-image:
+    linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+  background-size: 52px 52px;
+  mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.62) 55%, transparent 100%);
+}
+
+::selection {
+  background: var(--kodara-red);
+  color: #fff;
+}
+
+@media (max-width: 767px) {
+  section[id] {
+    scroll-margin-top: 70px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
 }
