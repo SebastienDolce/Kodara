@@ -5,8 +5,6 @@
   --foreground: #f3f0ea;
   --kodara-paper: #f2efe8;
   --kodara-red: #e1111c;
-  --kodara-pointer-x: 50vw;
-  --kodara-pointer-y: 38vh;
 }
 
 @theme inline {
@@ -23,7 +21,7 @@
 html {
   scroll-behavior: smooth;
   background: var(--background);
-  scrollbar-color: var(--kodara-red) #111;
+  scrollbar-color: #6b1118 #111;
   scrollbar-width: thin;
 }
 
@@ -36,11 +34,11 @@ body {
 }
 
 section[id] {
-  scroll-margin-top: 78px;
+  scroll-margin-top: 76px;
 }
 
 ::-webkit-scrollbar {
-  width: 8px;
+  width: 7px;
 }
 
 ::-webkit-scrollbar-track {
@@ -48,7 +46,7 @@ section[id] {
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #3a0b0e;
+  background: #5c151a;
 }
 
 ::-webkit-scrollbar-thumb:hover {
@@ -79,193 +77,19 @@ select {
 input:focus,
 textarea:focus,
 select:focus {
-  box-shadow: inset 3px 0 0 rgba(255, 255, 255, 0.8);
+  box-shadow: inset 3px 0 0 rgba(255, 255, 255, 0.82);
 }
 
 .kodara-mono {
   font-family: var(--font-kodara-mono), "SFMono-Regular", Consolas, monospace;
 }
 
-.kodara-pointer-field {
-  opacity: 0.75;
-  background:
-    radial-gradient(
-      320px circle at var(--kodara-pointer-x) var(--kodara-pointer-y),
-      rgba(225, 17, 28, 0.075),
-      rgba(225, 17, 28, 0.025) 34%,
-      transparent 72%
-    );
-  mix-blend-mode: screen;
-  transition: opacity 220ms ease;
-}
-
 .kodara-grid {
   background-image:
-    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-  background-size: 48px 48px;
-  mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.65) 58%, transparent 100%);
-}
-
-.kodara-grid-tight {
-  background-image:
-    linear-gradient(rgba(255, 255, 255, 0.035) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.035) 1px, transparent 1px);
-  background-size: 22px 22px;
-  animation: kodara-grid-drift 24s linear infinite;
-  transition: border-color 320ms ease, box-shadow 320ms ease;
-}
-
-.kodara-block {
-  display: inline-block;
-  background: var(--kodara-red);
-}
-
-.kodara-grain {
-  position: relative;
-  isolation: isolate;
-}
-
-.kodara-grain::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  z-index: -1;
-  pointer-events: none;
-  opacity: 0.18;
-  background-image:
-    radial-gradient(circle at 20% 18%, rgba(255, 255, 255, 0.05) 0 1px, transparent 1.5px),
-    radial-gradient(circle at 72% 68%, rgba(255, 255, 255, 0.035) 0 1px, transparent 1.5px);
-  background-size: 31px 31px, 43px 43px;
-}
-
-.kodara-scanline {
-  position: relative;
-  overflow: hidden;
-}
-
-.kodara-scanline::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  right: 0;
-  height: 1px;
-  top: -1px;
-  background: rgba(225, 17, 28, 0.65);
-  box-shadow: 0 0 24px rgba(225, 17, 28, 0.35);
-  animation: kodara-scan 4.8s linear infinite;
-  pointer-events: none;
-}
-
-.kodara-lab {
-  background:
-    linear-gradient(135deg, rgba(225, 17, 28, 0.07), transparent 32%),
-    linear-gradient(rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    linear-gradient(90deg, rgba(255, 255, 255, 0.025) 1px, transparent 1px),
-    #090909;
-  background-size: auto, 28px 28px, 28px 28px, auto;
-}
-
-.kodara-flow-line {
-  position: relative;
-}
-
-.kodara-flow-line::after {
-  content: "";
-  position: absolute;
-  top: 50%;
-  left: 100%;
-  width: 100%;
-  height: 1px;
-  background: linear-gradient(90deg, rgba(255,255,255,.2), var(--kodara-red), rgba(255,255,255,.2));
-  transform: translateY(-50%);
-  transform-origin: left center;
-  animation: kodara-pulse 2.4s ease-in-out infinite;
-}
-
-#work article {
-  position: relative;
-}
-
-#work article::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: -1px;
-  width: 0;
-  height: 1px;
-  background: var(--kodara-red);
-  transition: width 420ms cubic-bezier(.22,.8,.22,1);
-}
-
-#work article:hover::before {
-  width: 100%;
-}
-
-#work article:hover .kodara-grid-tight {
-  border-color: rgba(225, 17, 28, 0.35);
-  box-shadow: 0 24px 80px rgba(0, 0, 0, 0.28);
-}
-
-#services,
-#about,
-#lab,
-#notes,
-#contact {
-  position: relative;
-}
-
-#services::before,
-#about::before,
-#lab::before,
-#notes::before,
-#contact::before {
-  content: "";
-  position: absolute;
-  left: 0;
-  top: 0;
-  width: 42px;
-  height: 2px;
-  background: var(--kodara-red);
-}
-
-@supports (animation-timeline: view()) {
-  main section[id]:not(#home) > .mx-auto,
-  main section[id]:not(#home) > .relative.mx-auto {
-    animation: kodara-section-enter linear both;
-    animation-timeline: view();
-    animation-range: entry 0% entry 24%;
-  }
-}
-
-@keyframes kodara-scan {
-  0% { transform: translateY(0); opacity: 0; }
-  8% { opacity: 1; }
-  92% { opacity: 1; }
-  100% { transform: translateY(460px); opacity: 0; }
-}
-
-@keyframes kodara-pulse {
-  0%, 100% { opacity: 0.2; transform: translateY(-50%) scaleX(0.45); }
-  50% { opacity: 1; transform: translateY(-50%) scaleX(1); }
-}
-
-@keyframes kodara-grid-drift {
-  from { background-position: 0 0, 0 0; }
-  to { background-position: 22px 22px, 22px 22px; }
-}
-
-@keyframes kodara-section-enter {
-  from {
-    opacity: 0.34;
-    transform: translateY(34px) scale(0.992);
-    filter: saturate(0.7);
-  }
-  to {
-    opacity: 1;
-    transform: translateY(0) scale(1);
-    filter: saturate(1);
-  }
+    linear-gradient(rgba(255, 255, 255, 0.028) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(255, 255, 255, 0.028) 1px, transparent 1px);
+  background-size: 52px 52px;
+  mask-image: linear-gradient(to bottom, black 0%, rgba(0, 0, 0, 0.62) 55%, transparent 100%);
 }
 
 ::selection {
@@ -275,25 +99,13 @@ select:focus {
 
 @media (max-width: 767px) {
   section[id] {
-    scroll-margin-top: 72px;
-  }
-
-  #services::before,
-  #about::before,
-  #lab::before,
-  #notes::before,
-  #contact::before {
-    width: 28px;
+    scroll-margin-top: 70px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   html {
     scroll-behavior: auto;
-  }
-
-  .kodara-pointer-field {
-    display: none !important;
   }
 
   *,
