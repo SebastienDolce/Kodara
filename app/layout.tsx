@@ -5,6 +5,7 @@ import { IBM_Plex_Mono, Space_Grotesk } from "next/font/google";
 import Menu from "@/components/Menu";
 import Footer from "@/components/Footer";
 import DataBus from "@/components/DataBus";
+import MobileRelay from "@/components/MobileRelay";
 
 const display = Space_Grotesk({
   subsets: ["latin"],
@@ -42,6 +43,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body className="relative bg-[#080808] text-[#f3f0ea] antialiased">
         <Menu />
         <DataBus />
+        <MobileRelay />
         <main className="relative z-10">{children}</main>
         <Footer />
       </body>
