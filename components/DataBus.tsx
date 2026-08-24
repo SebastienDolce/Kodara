@@ -1,7 +1,7 @@
 "use client";
 
 import { usePathname } from "next/navigation";
-import { useEffect, useMemo, useState } from "react";
+import { Fragment, useEffect, useMemo, useState } from "react";
 
 type Point = { x: number; y: number };
 type MeasuredRect = { left: number; right: number; top: number; bottom: number };
@@ -43,6 +43,9 @@ const parentSectionFor = (node: BusNode, sections: BusSection[]) =>
   [...sections]
     .filter((section) => section.y <= node.y + 1)
     .sort((a, b) => b.y - a.y)[0];
+
+const lastProjectBottom = (projects: ProjectRoute[], fallback: number) =>
+  projects.length > 0 ? projects[projects.length - 1].rowBottom : fallback;
 
 export default function DataBus() {
   const pathname = usePathname();
@@ -210,7 +213,7 @@ export default function DataBus() {
     });
 
     const lowerSections = sections
-      .filter((section) => section.y > (projects.at(-1)?.rowBottom ?? workTop))
+      .filter((section) => section.y > lastProjectBottom(projects, workTop))
       .sort((a, b) => a.y - b.y);
 
     if (lowerSections.length > 0) {
@@ -224,7 +227,7 @@ export default function DataBus() {
   if (pathname !== "/" || !layout || !mainPath) return null;
 
   const lowerSections = layout.sections
-    .filter((section) => section.y > (layout.projects.at(-1)?.rowBottom ?? layout.workTop))
+    .filter((section) => section.y > lastProjectBottom(layout.projects, layout.workTop))
     .sort((a, b) => a.y - b.y);
 
   return (
@@ -240,10 +243,7 @@ export default function DataBus() {
         <path d={mainPath} opacity="0.76" />
         <path d={cardPath(layout.heroCard)} opacity="0.9" />
 
-        <path
-          d={`M ${layout.routeX} ${layout.workTop} H ${layout.contentRight}`}
-          opacity="0.56"
-        />
+        <path d={`M ${layout.routeX} ${layout.workTop} H ${layout.contentRight}`} opacity="0.56" />
 
         {layout.projects.map((project) => (
           <g key={`project-${project.id}`}>
@@ -264,26 +264,19 @@ export default function DataBus() {
         {layout.nodes.map((node) => {
           const section = parentSectionFor(node, lowerSections);
           if (!section || node.y <= section.y) return null;
-          return (
-            <path
-              key={`branch-${node.id}`}
-              d={`M ${node.x} ${section.y} V ${node.y}`}
-              opacity="0.36"
-            />
-          );
+          return <path key={`branch-${node.id}`} d={`M ${node.x} ${section.y} V ${node.y}`} opacity="0.36" />;
         })}
       </g>
 
       <g fill="var(--kodara-red)">
         <rect x={layout.start.x - 4} y={layout.start.y - 4} width="8" height="8" />
-
         <rect x={layout.routeX - 3.5} y={layout.workTop - 3.5} width="7" height="7" />
 
         {layout.projects.map((project) => (
-          <React.Fragment key={`junctions-${project.id}`}>
+          <Fragment key={`junctions-${project.id}`}>
             <rect x={layout.routeX - 3} y={project.rowTop - 3} width="6" height="6" />
             <rect x={layout.routeX - 3} y={project.rowBottom - 3} width="6" height="6" />
-          </React.Fragment>
+          </Fragment>
         ))}
 
         {lowerSections.map((section) => (
