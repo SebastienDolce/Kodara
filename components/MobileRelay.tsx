@@ -23,6 +23,7 @@ type RelayPoint = {
   toX: number;
   lineLeft: number;
   lineWidth: number;
+  lineOrigin: "left" | "right";
 };
 
 const relayTargets: RelayDescriptor[] = [
@@ -44,21 +45,23 @@ const pointForElement = (element: HTMLElement, descriptor: RelayDescriptor): Rel
   const tone = descriptor.tone ?? "red";
 
   if (descriptor.kind === "terminal") {
+    const travel = 116;
     return {
       id: descriptor.id,
       x: rect.left + rect.width / 2,
       y: window.scrollY + rect.top + rect.height / 2,
       kind: descriptor.kind,
       tone,
-      fromX: -52,
+      fromX: -travel,
       toX: 0,
-      lineLeft: -52,
-      lineWidth: 52,
+      lineLeft: -travel,
+      lineWidth: travel,
+      lineOrigin: "right",
     };
   }
 
   if (descriptor.kind === "card") {
-    const travel = Math.max(42, Math.min(72, rect.width * 0.22));
+    const travel = Math.max(100, Math.min(136, rect.width * 0.4));
     return {
       id: descriptor.id,
       x: rect.left + 1,
@@ -69,10 +72,11 @@ const pointForElement = (element: HTMLElement, descriptor: RelayDescriptor): Rel
       toX: travel,
       lineLeft: 0,
       lineWidth: travel,
+      lineOrigin: "left",
     };
   }
 
-  const travel = Math.max(46, Math.min(68, rect.width * 0.2));
+  const travel = Math.max(108, Math.min(140, rect.width * 0.38));
   return {
     id: descriptor.id,
     x: Math.max(rect.left + travel + 18, rect.right - 18),
@@ -83,6 +87,7 @@ const pointForElement = (element: HTMLElement, descriptor: RelayDescriptor): Rel
     toX: 0,
     lineLeft: -travel,
     lineWidth: travel,
+    lineOrigin: "right",
   };
 };
 
@@ -90,10 +95,16 @@ export default function MobileRelay() {
   const pathname = usePathname();
   const [point, setPoint] = useState<RelayPoint | null>(null);
   const [visible, setVisible] = useState(false);
+  const [lineReady, setLineReady] = useState(false);
   const [traveling, setTraveling] = useState(false);
+  const [lineFading, setLineFading] = useState(false);
   const hideTimer = useRef<number | null>(null);
+  const travelTimer = useRef<number | null>(null);
+  const fadeTimer = useRef<number | null>(null);
+  const settleTimer = useRef<number | null>(null);
   const lastAnyTrigger = useRef(0);
   const lastTriggerById = useRef(new Map<string, number>());
+  const activeCandidate = useRef<{ element: HTMLElement; descriptor: RelayDescriptor } | null>(null);
 
   useEffect(() => {
     if (pathname !== "/") return;
@@ -102,30 +113,66 @@ export default function MobileRelay() {
     const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)");
     const descriptorByElement = new Map<Element, RelayDescriptor>();
 
+    const clearAnimationTimers = () => {
+      if (hideTimer.current !== null) window.clearTimeout(hideTimer.current);
+      if (travelTimer.current !== null) window.clearTimeout(travelTimer.current);
+      if (fadeTimer.current !== null) window.clearTimeout(fadeTimer.current);
+    };
+
     const trigger = (element: HTMLElement, descriptor: RelayDescriptor) => {
       if (!mobile.matches || reducedMotion.matches) return;
 
       const now = Date.now();
       const lastForTarget = lastTriggerById.current.get(descriptor.id) ?? 0;
-      if (now - lastAnyTrigger.current < 1400 || now - lastForTarget < 7000) return;
+      if (now - lastAnyTrigger.current < 1900 || now - lastForTarget < 9000) return;
 
       lastAnyTrigger.current = now;
       lastTriggerById.current.set(descriptor.id, now);
-
-      if (hideTimer.current !== null) window.clearTimeout(hideTimer.current);
+      clearAnimationTimers();
 
       setPoint(pointForElement(element, descriptor));
-      setTraveling(false);
       setVisible(true);
+      setLineReady(false);
+      setTraveling(false);
+      setLineFading(false);
 
       requestAnimationFrame(() => {
-        requestAnimationFrame(() => setTraveling(true));
+        requestAnimationFrame(() => setLineReady(true));
       });
 
+      travelTimer.current = window.setTimeout(() => setTraveling(true), 210);
+      fadeTimer.current = window.setTimeout(() => setLineFading(true), 1080);
       hideTimer.current = window.setTimeout(() => {
         setVisible(false);
         setTraveling(false);
-      }, 1180);
+        setLineReady(false);
+        setLineFading(false);
+      }, 1580);
+    };
+
+    const candidateIsSettled = (element: HTMLElement) => {
+      const rect = element.getBoundingClientRect();
+      const viewportHeight = window.innerHeight;
+      const visibleTop = Math.max(0, rect.top);
+      const visibleBottom = Math.min(viewportHeight, rect.bottom);
+      const visibleHeight = Math.max(0, visibleBottom - visibleTop);
+      const minimumVisible = Math.min(rect.height * 0.3, viewportHeight * 0.2);
+      const anchor = rect.top + Math.min(rect.height * 0.35, 180);
+
+      return (
+        visibleHeight >= minimumVisible &&
+        anchor >= viewportHeight * 0.2 &&
+        anchor <= viewportHeight * 0.78
+      );
+    };
+
+    const scheduleSettledTrigger = () => {
+      if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
+      settleTimer.current = window.setTimeout(() => {
+        const candidate = activeCandidate.current;
+        if (!candidate || !candidateIsSettled(candidate.element)) return;
+        trigger(candidate.element, candidate.descriptor);
+      }, 240);
     };
 
     const observer = new IntersectionObserver(
@@ -144,18 +191,23 @@ export default function MobileRelay() {
           )
           .sort((a, b) => {
             const center = window.innerHeight * 0.48;
-            return (
-              Math.abs(a.entry.boundingClientRect.top - center) -
-              Math.abs(b.entry.boundingClientRect.top - center)
-            );
+            const aAnchor = a.entry.boundingClientRect.top + Math.min(a.entry.boundingClientRect.height * 0.35, 180);
+            const bAnchor = b.entry.boundingClientRect.top + Math.min(b.entry.boundingClientRect.height * 0.35, 180);
+            return Math.abs(aAnchor - center) - Math.abs(bAnchor - center);
           });
 
         const candidate = candidates[0];
-        if (candidate) trigger(candidate.entry.target as HTMLElement, candidate.descriptor);
+        if (!candidate) return;
+
+        activeCandidate.current = {
+          element: candidate.entry.target as HTMLElement,
+          descriptor: candidate.descriptor,
+        };
+        scheduleSettledTrigger();
       },
       {
-        threshold: [0.12, 0.28, 0.5],
-        rootMargin: "-8% 0px -12% 0px",
+        threshold: [0.3, 0.5, 0.7],
+        rootMargin: "-14% 0px -16% 0px",
       }
     );
 
@@ -166,19 +218,29 @@ export default function MobileRelay() {
       observer.observe(element);
     });
 
+    const handleScroll = () => {
+      if (!mobile.matches || reducedMotion.matches) return;
+      scheduleSettledTrigger();
+    };
+
     const handleMediaChange = () => {
       if (!mobile.matches || reducedMotion.matches) {
         setVisible(false);
         setTraveling(false);
+        setLineReady(false);
+        setLineFading(false);
       }
     };
 
+    window.addEventListener("scroll", handleScroll, { passive: true });
     mobile.addEventListener?.("change", handleMediaChange);
     reducedMotion.addEventListener?.("change", handleMediaChange);
 
     return () => {
       observer.disconnect();
-      if (hideTimer.current !== null) window.clearTimeout(hideTimer.current);
+      clearAnimationTimers();
+      if (settleTimer.current !== null) window.clearTimeout(settleTimer.current);
+      window.removeEventListener("scroll", handleScroll);
       mobile.removeEventListener?.("change", handleMediaChange);
       reducedMotion.removeEventListener?.("change", handleMediaChange);
     };
@@ -201,8 +263,17 @@ export default function MobileRelay() {
       }}
     >
       <span
-        className="absolute top-[5px] h-px bg-current opacity-60"
-        style={{ left: point.lineLeft, width: point.lineWidth }}
+        className="absolute top-[5px] h-px bg-current"
+        style={{
+          left: point.lineLeft,
+          width: point.lineWidth,
+          opacity: lineReady ? (lineFading ? 0 : 0.64) : 0,
+          transform: `scaleX(${lineReady ? 1 : 0.12})`,
+          transformOrigin: point.lineOrigin,
+          transition: lineFading
+            ? "opacity 420ms ease"
+            : "transform 180ms ease-out, opacity 140ms ease-out",
+        }}
       />
 
       <span
@@ -210,8 +281,11 @@ export default function MobileRelay() {
         style={{
           width: packetSize,
           height: packetSize,
+          opacity: lineReady ? 1 : 0,
           transform: `translate3d(${traveling ? point.toX : point.fromX}px, 0, 0)`,
-          transition: "transform 900ms cubic-bezier(0.22, 1, 0.36, 1)",
+          transition: traveling
+            ? "transform 1280ms cubic-bezier(0.22, 1, 0.36, 1), opacity 120ms ease-out"
+            : "opacity 120ms ease-out",
         }}
       />
     </div>
